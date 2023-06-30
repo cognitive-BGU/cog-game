@@ -1,10 +1,8 @@
 import numpy as np
-
 from src.const import FRAME_WIDTH, FRAME_HEIGHT
 
 
 def landmarks_to_cv(land):
-
     cv_x = land.x * FRAME_WIDTH
     cv_y = land.y * FRAME_HEIGHT
     return {'x': cv_x, 'y': cv_y}

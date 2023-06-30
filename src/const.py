@@ -15,21 +15,17 @@ HAT_PATH = 'images/hat.png'
 PARROT_PATH = 'images/parrot.png'
 PARROT_DIS_PATH = 'images/parrot_dis.png'
 
-FRAME_WIDTH = 1920
-FRAME_HEIGHT = 1080
+FRAME_WIDTH = 640
+FRAME_HEIGHT = 480
 FRAME_SIZE = (FRAME_WIDTH, FRAME_HEIGHT)
-FPS = 60
+FPS = 30
 
-place_x = 50  # place_x+size < 1080 [0-780]
-place_y = 50  # place_x+size < 1920
-
-
-
-
+place_x = 10  # place_x+size < 1080 [0-780]
+place_y = 10  # place_x+size < 1920
 
 
 # stand place (part 1)
-STAND_PLACE_SIZE = [512 * 1.6, 512 * 1.6 ]
+STAND_PLACE_SIZE = [512 * 0.6, 512 * 0.6 ]
 STAND_PLACE_POS = [500, 380]
 
 HAT_SIZE = [512 * 0.16, 512 * 0.16]

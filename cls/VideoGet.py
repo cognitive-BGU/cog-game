@@ -1,5 +1,5 @@
 from threading import Thread
-import cv2
+from src.const import *
 
 class VideoGet:
     """
@@ -7,10 +7,10 @@ class VideoGet:
     with a dedicated thread.
     """
 
-    def __init__(self, src=1):
+    def __init__(self, src=0):
         self.stream = cv2.VideoCapture(src)
-        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
 
         (self.grabbed, self.frame) = self.stream.read()
         self.stopped = False

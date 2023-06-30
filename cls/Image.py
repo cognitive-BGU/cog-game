@@ -5,7 +5,7 @@ class Image:
 
     def __init__(self, path, location):
         self.logo = cv2.imread(path)
-        self.size = 200
+        self.size = 50
         self.alpha = 1.0
         self.location = location
         self.has_touched = False
