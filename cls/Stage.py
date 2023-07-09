@@ -1,20 +1,20 @@
 import time
 
 from cls.Image import Image
-from src.calculate import landmarks_to_cv, calculate_angle
+from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center
 from src.const import *
 import numpy as np
 
 IMAGES = [MAN_PATH, RED_APPLE_PATH, HAT_PATH, PARROT_PATH]
-LOCATION = [[0, 0], [50, 50], [0, 0]]
-ITERATION = 3
+LOCATION = [0, 0]
+ITERATION = 5
 
 
 class Stage:
 
     def __init__(self, number):
         self.number = number
-        self.image = Image(IMAGES[number], LOCATION[number])
+        self.image = Image(IMAGES[number], LOCATION)
         self.success = 0
         self.last_success = time.time()
 
@@ -22,8 +22,8 @@ class Stage:
         if self.success == ITERATION - 1:
             self.__init__(self.number + 1)
 
-        self.image = Image(IMAGES[self.number], LOCATION[self.number])
-        # self.success += 1
+        self.image = Image(IMAGES[self.number], LOCATION)
+        self.success += 1
         self.last_success = time.time()
 
     def check_touched(self, pose_results, mp_pose, hand_results):
@@ -50,7 +50,7 @@ class Stage:
                 if left_shoulder['x'] > 320 and left_shoulder['y'] > 240:
                     return True
 
-        if self.number == 1:  # apple
+        else:  # apple
             if hand_results.multi_hand_landmarks:
                 for hand_landmarks in hand_results.multi_hand_landmarks:
                     for id, landmark in enumerate(hand_landmarks.landmark):
@@ -58,10 +58,6 @@ class Stage:
                         if (self.image.location[0] <= x <= self.image.location[0] + self.image.size and
                                 self.image.location[1] <= y <= self.image.location[1] + self.image.size):
                             self.image.has_touched = True
-
-        if self.number == 2:  # hat
-            # right_wrist = 0
-            pass
 
         return False
 
@@ -71,24 +67,33 @@ class Stage:
         except:
             return
         if self.number == 1:  # apple
-            left_hip = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_HIP.value])
+            upper_arm_length = calculate_distance("LEFT_SHOULDER", "LEFT_ELBOW", landmarks, mp_pose)
+            forearm_length = calculate_distance("LEFT_ELBOW", "LEFT_WRIST", landmarks, mp_pose)
+            arm_length = 1.3 * (upper_arm_length + forearm_length)
+
             left_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
-            left_elbow = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value])
-            left_wrist = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value])
-
-            upper_arm_length = np.sqrt(
-                (left_shoulder['x'] - left_elbow['x']) ** 2 + (left_shoulder['y'] - left_elbow['y']) ** 2)
-            forearm_length = np.sqrt(
-                (left_elbow['x'] - left_wrist['x']) ** 2 + (left_elbow['y'] - left_wrist['y']) ** 2)
-            arm_length = 1.3 *(upper_arm_length + forearm_length)
-
             angle_radians = np.deg2rad(50)
-
             new_x = int(left_shoulder['x'] + arm_length * np.cos(angle_radians))
             new_y = int(left_shoulder['y'] - arm_length * np.sin(angle_radians))
+
+            shoulder_distance = calculate_distance("LEFT_SHOULDER", "RIGHT_SHOULDER", landmarks, mp_pose)
+            if not self.image.has_touched:
+                self.image.size = int(shoulder_distance / 3)
 
             self.image.location = new_y, new_x
 
         if self.number == 2:  # hat
-            nose = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.NOSE.value])
-            self.image.location = int(nose['y']), int(nose['x'])
+            shoulder_center = calculate_center("LEFT_SHOULDER", "RIGHT_SHOULDER", landmarks, mp_pose)
+            shoulder_distance = calculate_distance("LEFT_SHOULDER", "RIGHT_SHOULDER", landmarks, mp_pose)
+            if not self.image.has_touched:
+                self.image.size = int(shoulder_distance / 3)
+            self.image.location = int(shoulder_center['y'] - shoulder_distance * 1.25), \
+                                  int(shoulder_center['x'] - self.image.size / 2)
+
+        if self.number == 3:  # parrot
+            left_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
+            shoulder_distance = calculate_distance("LEFT_SHOULDER", "RIGHT_SHOULDER", landmarks, mp_pose)
+            if not self.image.has_touched:
+                self.image.size = int(shoulder_distance / 2)
+            self.image.location = int(left_shoulder['y'] - self.image.size ), \
+                                  int(left_shoulder['x'] - self.image.size/2)

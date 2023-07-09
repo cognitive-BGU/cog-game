@@ -1,5 +1,5 @@
 from src.const import *
-DISAPPEAR_SPEED = 6
+DISAPPEAR_SPEED = 10
 
 class Image:
 

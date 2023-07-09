@@ -3,6 +3,7 @@ import numpy as np
 
 from cls.Stage import Stage
 from src.const import *
+from src.const import FRAME_WIDTH, FRAME_HEIGHT
 
 
 def update_frame(frame, stage):
@@ -63,6 +64,7 @@ def show_video(source=0):
                                   mp_pose.POSE_CONNECTIONS,
                                   landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
 
+        frame = cv2.resize(frame, (int(FRAME_WIDTH * 1.4), int(FRAME_HEIGHT * 1.4)))
         cv2.imshow("Video name", frame)
 
         if cv2.waitKey(1) == ord("q"):

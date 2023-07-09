@@ -8,40 +8,46 @@ def landmarks_to_cv(land):
     return {'x': cv_x, 'y': cv_y}
 
 def calculate_angle(a:dict, b:dict, c:dict):
-
     radians = np.arctan2(c['y'] - b['y'], c['x'] - b['x']) - np.arctan2(a['y'] - b['y'], a['x'] - b['x'])
     angle = np.abs(radians * 180.0 / np.pi)
     if angle > 180.0:
         angle = 360 - angle
     return angle
 
+def calculate_distance(pose1, pose2, landmarks, mp_pose):
+    pose1_cv = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[pose1].value])
+    pose2_cv = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[pose2].value])
+    distance = np.sqrt((pose1_cv['x'] - pose2_cv['x']) ** 2 + (pose1_cv['y'] - pose2_cv['y']) ** 2)
+    return distance
 
+def calculate_center(pose1, pose2, landmarks, mp_pose):
+    pose1_cv = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[pose1].value])
+    pose2_cv = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[pose2].value])
+    center = {'x': (pose1_cv['x'] + pose2_cv['x']) / 2, 'y': (pose1_cv['y'] + pose2_cv['y']) / 2}
+    return center
 
 """
-global d, k
-d, k = True, True
-def update_hand_example(pos, org):
-    global d,k
-    change = 2
-    length = 80
-    if d:
-        x = pos[0] - change
-        y = (length ** 2 - (x - org[0]) ** 2) ** 0.5 + org[1]  # (x-a)^2 + (y-b)^2 = R
-    else:
-        x = pos[0] + change
-        y = -(length ** 2 - (x - org[0]) ** 2) ** 0.5 + org[1]  # (x-a)^2 + (y-b)^2 = R
+def min_distances_to_square(square_location, square_size, points):
+    min_distances = []
+    [square_x, square_y] = square_location
+    for point in points:
+        point_x, point_y = point
+        if point_x < square_x:
+            dx = square_x - point_x
+        elif point_x > square_x + square_size:
+            dx = point_x - (square_x + square_size)
+        else:
+            dx = 0
+        if point_y < square_y:
+            dy = square_y - point_y
+        elif point_y > square_y + square_size:
+            dy = point_y - (square_y + square_size)
+        else:
+            dy = 0
+        min_distance = np.sqrt(dx ** 2 + dy ** 2)
+        min_distances.append(min_distance)
+    return min_distances
 
-    if type(y) is complex:
-        print("now")
-        d = not d
-        y = pos[1]
-    
-    if 712<x < 715:
-        print(x,y)
-        k = False
-    if not k:
-        x = pos[0] - change
-        y = -(length ** 2 - (x - org[0]) ** 2) ** 0.5 + org[1]  # (x-a)^2 + (y-b)^2 = R
-    
-    return x, y
+min_distances = min_distances_to_square([100, 100], 50, [(100, 99), (120, 120)])
+print(min_distances)
 """
