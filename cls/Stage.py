@@ -35,29 +35,27 @@ class Stage:
         if time.time() - self.last_success < 2:
             return False
 
-        if self.number == 0:
-            left_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
-            right_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
-
-            if right_shoulder['x'] < 500 and right_shoulder['y'] > 240:
-                if left_shoulder['x'] > 320 and left_shoulder['y'] > 240:
-                    return True
+        if self.number == 0:  # calibration
+            if calculate_distance('LEFT_SHOULDER', 'RIGHT_SHOULDER', landmarks, mp_pose) > 150:
+                return False
 
             left_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
             right_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
 
             if right_shoulder['x'] < 500 and right_shoulder['y'] > 240:
                 if left_shoulder['x'] > 320 and left_shoulder['y'] > 240:
+                    self.success = ITERATION - 1
+                    self.update()
                     return True
 
-        else:  # apple
+        else:  # tasks
             if hand_results.multi_hand_landmarks:
                 for hand_landmarks in hand_results.multi_hand_landmarks:
                     for id, landmark in enumerate(hand_landmarks.landmark):
                         y, x = int(landmark.x * FRAME_WIDTH), int(landmark.y * FRAME_HEIGHT)
                         if (self.image.location[0] <= x <= self.image.location[0] + self.image.size and
                                 self.image.location[1] <= y <= self.image.location[1] + self.image.size):
-                            self.image.has_touched = True
+                            return True
 
         return False
 
@@ -66,6 +64,12 @@ class Stage:
             landmarks = results.pose_landmarks.landmark
         except:
             return
+
+        if self.number == 0:  # calibration
+            size = int(FRAME_HEIGHT*0.9)
+            self.image.size = size
+            self.image.location = int(FRAME_WIDTH / 2 - size / 4), int(FRAME_HEIGHT / 2 - size / 3)
+
         if self.number == 1:  # apple
             upper_arm_length = calculate_distance("LEFT_SHOULDER", "LEFT_ELBOW", landmarks, mp_pose)
             forearm_length = calculate_distance("LEFT_ELBOW", "LEFT_WRIST", landmarks, mp_pose)
@@ -95,5 +99,5 @@ class Stage:
             shoulder_distance = calculate_distance("LEFT_SHOULDER", "RIGHT_SHOULDER", landmarks, mp_pose)
             if not self.image.has_touched:
                 self.image.size = int(shoulder_distance / 2)
-            self.image.location = int(left_shoulder['y'] - self.image.size ), \
-                                  int(left_shoulder['x'] - self.image.size/2)
+            self.image.location = int(left_shoulder['y'] - self.image.size), \
+                                  int(left_shoulder['x'] - self.image.size / 2)

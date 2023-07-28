@@ -27,27 +27,4 @@ def calculate_center(pose1, pose2, landmarks, mp_pose):
     return center
 
 """
-def min_distances_to_square(square_location, square_size, points):
-    min_distances = []
-    [square_x, square_y] = square_location
-    for point in points:
-        point_x, point_y = point
-        if point_x < square_x:
-            dx = square_x - point_x
-        elif point_x > square_x + square_size:
-            dx = point_x - (square_x + square_size)
-        else:
-            dx = 0
-        if point_y < square_y:
-            dy = square_y - point_y
-        elif point_y > square_y + square_size:
-            dy = point_y - (square_y + square_size)
-        else:
-            dy = 0
-        min_distance = np.sqrt(dx ** 2 + dy ** 2)
-        min_distances.append(min_distance)
-    return min_distances
-
-min_distances = min_distances_to_square([100, 100], 50, [(100, 99), (120, 120)])
-print(min_distances)
 """
