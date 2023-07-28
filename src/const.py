@@ -1,7 +1,6 @@
 import cv2
 import mediapipe as mp
 
-
 WHITE = (255, 255, 255)
 BLUE = (150, 200, 255)
 BLACK = (0, 0, 0)
@@ -15,6 +14,8 @@ HAT_PATH = 'images/hat.png'
 PARROT_PATH = 'images/parrot.png'
 PARROT_DIS_PATH = 'images/parrot_dis.png'
 
+SUCCESS_SOUND = "images/success-sound.mp3"
+
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FRAME_SIZE = (FRAME_WIDTH, FRAME_HEIGHT)
@@ -23,15 +24,12 @@ FPS = 30
 place_x = 10  # place_x+size < 1080 [0-780]
 place_y = 10  # place_x+size < 1920
 
-
 # stand place (part 1)
-STAND_PLACE_SIZE = [512 * 0.6, 512 * 0.6 ]
+STAND_PLACE_SIZE = [512 * 0.6, 512 * 0.6]
 STAND_PLACE_POS = [500, 380]
 
 HAT_SIZE = [512 * 0.16, 512 * 0.16]
 PARROT_SIZE = [512 * 0.2, 512 * 0.2]
-
-
 
 EXAMPLE_PATH = 'images/example.png'
 EXAMPLE_HAND_PATH = 'images/hand.png'
