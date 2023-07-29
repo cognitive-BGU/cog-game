@@ -59,7 +59,10 @@ class Stage:
 
         return False
 
-    def update_image_location(self, results, mp_pose):
+    def update_image_location(self, results, mp_pose, side):
+        """
+        @param: side  'RIGHT'/ 'LEFT'
+        """
         try:
             landmarks = results.pose_landmarks.landmark
         except:
