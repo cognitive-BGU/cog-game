@@ -24,8 +24,8 @@ def start_gui():
     ttk.Label(window, text="Trials per tasks", style='TLabel').grid(row=0, column=0, padx=10, pady=(30, 10))
     repeat_spinbox.grid(row=0, column=1, pady=(30, 10))
 
-    time = tk.StringVar(value='1:00')
-    time_val = ('0:20', '0:30', '0:45', '1:00', '1:30', '2:00', '2:30')
+    time = tk.StringVar(value='30:00')
+    time_val = ('15:00', '30:00', '45:00', '60:00', '90:00', '120:00')
     time_spinbox = ttk.Spinbox(window, values=time_val, textvariable=time, width=WIDGET_WIDTH, font=FONT)
     time_spinbox.grid(row=1, column=1)
     ttk.Label(window, text="Trial max time (sec)", style='TLabel').grid(row=1, padx=10, pady=10)

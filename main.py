@@ -6,6 +6,6 @@ COMP_CAMERA = 0
 if __name__ == '__main__':
     #config = start_gui()
     #print(config)
-    config = {'trials': 4, 'max_time': '15.00', 'side': 'RIGHT'}
+    config = {'trials': 3, 'max_time': '15.00', 'side': 'RIGHT'}
 
     start_game(config, COMP_CAMERA)

@@ -13,6 +13,7 @@ MAN_PATH = 'images/man.png'
 HAT_PATH = 'images/hat.png'
 PARROT_PATH = 'images/parrot.png'
 PARROT_DIS_PATH = 'images/parrot_dis.png'
+IMAGES = [MAN_PATH, RED_APPLE_PATH, RED_APPLE_PATH, HAT_PATH, PARROT_PATH]
 
 SUCCESS_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'success-sound.wav')
 END_TASK_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'completionwav.wav')
@@ -28,8 +29,6 @@ PROCES_AXES = (60, 60)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 DARK_GREEN = (0, 120, 0)
-
-
 
 place_x = 10  # place_x+size < 1080 [0-780]
 place_y = 10  # place_x+size < 1920

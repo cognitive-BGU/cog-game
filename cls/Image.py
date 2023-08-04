@@ -3,6 +3,7 @@ from src.sound import play_sound
 
 DISAPPEAR_SPEED = 10
 
+
 class Image:
 
     def __init__(self, path, location):
