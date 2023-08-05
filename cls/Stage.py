@@ -6,6 +6,9 @@ from src.const import *
 import numpy as np
 
 LOCATION = [0, 0]
+FIRST_APPLE_ANGLE = 20
+SECOND_APPLE_ANGLE = 50
+
 
 class Stage:
     last_success = time.time()
@@ -82,9 +85,9 @@ class Stage:
             shoulder_pos = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[f'{side}_SHOULDER'].value])
 
             if self.number == 1:
-                angle_radians = np.deg2rad(20 if side == 'LEFT' else 160)
+                angle_radians = np.deg2rad(FIRST_APPLE_ANGLE if side == 'LEFT' else 180 - FIRST_APPLE_ANGLE)
             else:
-                angle_radians = np.deg2rad(50 if side == 'LEFT' else 120)
+                angle_radians = np.deg2rad(SECOND_APPLE_ANGLE if side == 'LEFT' else 180 - SECOND_APPLE_ANGLE)
 
             new_x = int(shoulder_pos['x'] + task_dist * np.cos(angle_radians))
             new_y = int(shoulder_pos['y'] - task_dist * np.sin(angle_radians))

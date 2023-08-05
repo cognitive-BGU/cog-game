@@ -15,8 +15,11 @@ PARROT_PATH = 'images/parrot.png'
 PARROT_DIS_PATH = 'images/parrot_dis.png'
 IMAGES = [MAN_PATH, RED_APPLE_PATH, RED_APPLE_PATH, HAT_PATH, PARROT_PATH]
 
+CLOCK_PATH = 'images/clock.png'
+
 SUCCESS_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'success-sound.wav')
-END_TASK_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'completionwav.wav')
+END_TASK_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'completion.wav')
+TIMEOUT_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'timeout.wav')
 
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
