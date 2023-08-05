@@ -7,7 +7,7 @@ import numpy as np
 
 LOCATION = [0, 0]
 FIRST_APPLE_ANGLE = 20
-SECOND_APPLE_ANGLE = 50
+SECOND_APPLE_ANGLE = 35
 
 
 class Stage:
@@ -19,7 +19,7 @@ class Stage:
         self.success = 0
         self.trials = trials
 
-    def update(self):
+    def add_success(self):
         self.success += 1
         self.last_success = time.time()
         if self.success == self.trials:
@@ -39,16 +39,17 @@ class Stage:
             return False
 
         if self.number == 0:  # calibration
-            if calculate_distance('LEFT_SHOULDER', 'RIGHT_SHOULDER', landmarks, mp_pose) > 150:
+            if calculate_distance('LEFT_SHOULDER', 'RIGHT_SHOULDER', landmarks, mp_pose) > 110:
                 return False
 
-            left_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
-            right_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
+            right_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
+            left_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
+            print(right_shoulder, left_shoulder)
 
-            if right_shoulder['x'] < 500 and right_shoulder['y'] > 240:
-                if left_shoulder['x'] > 320 and left_shoulder['y'] > 240:
+            if right_shoulder['x'] < 400 and right_shoulder['y'] > 300:
+                if left_shoulder['x'] > 250 and left_shoulder['y'] > 300:
                     self.success = self.trials - 1
-                    self.update()
+                    self.add_success()
                     return True
 
         else:  # tasks
@@ -75,14 +76,14 @@ class Stage:
             return
 
         shoulder_distance = calculate_distance("LEFT_SHOULDER", "RIGHT_SHOULDER", landmarks, mp_pose)
+        shoulder_pos = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[f'{side}_SHOULDER'].value])
 
         if self.number == 1 or self.number == 2:  # apple
             image_size = int(shoulder_distance / 3)
             if not self.image.has_touched:
                 self.image.size = image_size
 
-            task_dist = shoulder_distance * 2
-            shoulder_pos = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[f'{side}_SHOULDER'].value])
+            task_dist = shoulder_distance * 2.1
 
             if self.number == 1:
                 angle_radians = np.deg2rad(FIRST_APPLE_ANGLE if side == 'LEFT' else 180 - FIRST_APPLE_ANGLE)
@@ -97,13 +98,17 @@ class Stage:
             shoulder_center = calculate_center("LEFT_SHOULDER", "RIGHT_SHOULDER", landmarks, mp_pose)
             if not self.image.has_touched:
                 self.image.size = int(shoulder_distance / 3)
-            self.image.location = int(shoulder_center['y'] - shoulder_distance * 1.25), \
-                                  int(shoulder_center['x'] - self.image.size / 2)
+            self.image.location = [int(shoulder_center['y'] - shoulder_distance * 1.25),
+                                   int(shoulder_center['x'] - self.image.size / 2)]
 
         if self.number == 4:  # parrot
-            shoulder_pos = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[f'{side}_SHOULDER'].value])
-            shoulder_distance = calculate_distance("LEFT_SHOULDER", "RIGHT_SHOULDER", landmarks, mp_pose)
             if not self.image.has_touched:
                 self.image.size = int(shoulder_distance / 2)
-            self.image.location = int(shoulder_pos['y'] - self.image.size), \
-                                  int(shoulder_pos['x'] - self.image.size / 2)
+            self.image.location = [int(shoulder_pos['y'] - self.image.size),
+                                   int(shoulder_pos['x'] - self.image.size / 2)]
+
+    def is_last_stage(self):
+        return self.number == len(IMAGES) - 1
+
+    def is_last_trial(self):
+        return self.is_last_stage() and self.success == self.trials

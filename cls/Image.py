@@ -1,7 +1,7 @@
 from src.const import *
 from src.sound import play_sound
 
-DISAPPEAR_SPEED = 10
+DISAPPEAR_SPEED = 15
 
 
 class Image:

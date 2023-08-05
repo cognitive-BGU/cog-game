@@ -15,7 +15,6 @@ PARROT_PATH = 'images/parrot.png'
 PARROT_DIS_PATH = 'images/parrot_dis.png'
 IMAGES = [MAN_PATH, RED_APPLE_PATH, RED_APPLE_PATH, HAT_PATH, PARROT_PATH]
 
-CLOCK_PATH = 'images/clock.png'
 
 SUCCESS_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'success-sound.wav')
 END_TASK_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'completion.wav')
@@ -33,18 +32,9 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 DARK_GREEN = (0, 120, 0)
 
-place_x = 10  # place_x+size < 1080 [0-780]
-place_y = 10  # place_x+size < 1920
+#clock
+CLOCK_PATH = 'images/clock.png'
+CLOCK_LOCATION = 500, 50
+ORANGE = (0, 165, 255)
+RED = (0, 0, 255)
 
-# stand place (part 1)
-STAND_PLACE_SIZE = [512 * 0.6, 512 * 0.6]
-STAND_PLACE_POS = [500, 380]
-
-HAT_SIZE = [512 * 0.16, 512 * 0.16]
-PARROT_SIZE = [512 * 0.2, 512 * 0.2]
-
-EXAMPLE_PATH = 'images/example.png'
-EXAMPLE_HAND_PATH = 'images/hand.png'
-EXAMPLE_POS = [740, 500]
-EXAMPLE_SIZE = [150, 150]
-EXAMPLE_HAND_POS = {'right': (750, 600), 'left': (0, 0)}

@@ -7,11 +7,11 @@ WIDGET_WIDTH = 5
 SETTING_ICON = 'images/settings.ico'
 
 
-def start_gui():
+def run_gui():
     window = tk.Tk()
     window.title('Cog')
     window.iconbitmap(SETTING_ICON)
-    window.geometry(cal_window_geometry(window))
+    window.geometry(calculate_window_geometry(window))
     window.configure(bg='white')
 
     window.columnconfigure(0, weight=1, pad=3)
@@ -53,7 +53,7 @@ def on_click(window, repeat, time, side):
               'side': side.get().upper()}
 
 
-def cal_window_geometry(window):
+def calculate_window_geometry(window):
     screen_width = window.winfo_screenwidth()
     screen_height = window.winfo_screenheight()
     window_high = int(screen_height / 3)
