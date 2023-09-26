@@ -1,5 +1,9 @@
+import time
+
 import cv2
 import numpy as np
+
+from cls import Stage
 from src.const import *
 
 
@@ -8,7 +12,7 @@ class Frame:
         self.frame = frame
 
     def resize(self):
-        self.frame = cv2.resize(self.frame, (int(FRAME_WIDTH * 1.4), int(FRAME_HEIGHT * 1.4)))
+        self.frame = cv2.resize(self.frame, (int(FRAME_WIDTH * 2), int(FRAME_HEIGHT * 2)))
 
     def flip(self):
         self.frame = cv2.flip(self.frame, 1)

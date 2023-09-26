@@ -8,10 +8,12 @@ import numpy as np
 LOCATION = [0, 0]
 FIRST_APPLE_ANGLE = 20
 SECOND_APPLE_ANGLE = 35
+TIME_BETWEEN_TRAILS = 4
 
 
 class Stage:
     last_success = time.time()
+    apple_dist = None
 
     def __init__(self, number, trials):
         self.number = number
@@ -20,14 +22,14 @@ class Stage:
         self.trials = trials
 
     def add_success(self):
-        self.success += 1
-        self.last_success = time.time()
-        if self.success == self.trials:
-            if self.number < len(IMAGES) - 1:
-                play_sound(END_TASK_SOUND)
-                self.__init__(self.number + 1, self.trials)
-        else:
-            self.image = Image(IMAGES[self.number], LOCATION)
+        if time.time() - self.last_success > TIME_BETWEEN_TRAILS:
+            self.success += 1
+            if self.success == self.trials:
+                if self.number < len(IMAGES) - 1:
+                    play_sound(END_TASK_SOUND)
+                    self.__init__(self.number + 1, self.trials)
+            else:
+                self.image = Image(IMAGES[self.number], LOCATION)
 
     def check_touched(self, pose_results, mp_pose, hand_results):
         try:
@@ -44,7 +46,6 @@ class Stage:
 
             right_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
             left_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
-            print(right_shoulder, left_shoulder)
 
             if right_shoulder['x'] < 400 and right_shoulder['y'] > 300:
                 if left_shoulder['x'] > 250 and left_shoulder['y'] > 300:
@@ -83,7 +84,7 @@ class Stage:
             if not self.image.has_touched:
                 self.image.size = image_size
 
-            task_dist = shoulder_distance * 2.1
+            task_dist = shoulder_distance * self.apple_dist
 
             if self.number == 1:
                 angle_radians = np.deg2rad(FIRST_APPLE_ANGLE if side == 'LEFT' else 180 - FIRST_APPLE_ANGLE)
