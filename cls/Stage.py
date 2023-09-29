@@ -1,6 +1,7 @@
 import time
 from cls.Image import Image
 from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center
+from src.json_utils import save_to_json
 from src.sound import play_sound
 from src.const import *
 import numpy as np
@@ -20,6 +21,7 @@ class Stage:
         self.image = Image(IMAGES[number], LOCATION)
         self.success = 0
         self.trials = trials
+        save_to_json({number: time.time()}, 'data.json')
 
     def add_success(self):
         if time.time() - self.last_success > TIME_BETWEEN_TRAILS:
