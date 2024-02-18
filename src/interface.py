@@ -30,31 +30,42 @@ def run_gui():
     style = ttk.Style()
     style.configure('TLabel', background='white', font=FONT)
 
+    # Trials per tasks
     repeat = tk.IntVar(value=4)
     repeat_spinbox = ttk.Spinbox(window, from_=1, to=10, width=WIDGET_WIDTH, textvariable=repeat, font=FONT)
     ttk.Label(window, text="Trials per tasks", style='TLabel').grid(row=0, column=0, padx=10, pady=(30, 10))
     repeat_spinbox.grid(row=0, column=1, pady=(30, 10))
 
+    # Task max time (sec)
     time = tk.StringVar(value='30:00')
     time_val = ('15:00', '30:00', '45:00', '60:00', '90:00', '120:00')
     time_spinbox = ttk.Spinbox(window, values=time_val, textvariable=time, width=WIDGET_WIDTH, font=FONT)
     time_spinbox.grid(row=1, column=1)
-    ttk.Label(window, text="Trial max time (sec)", style='TLabel').grid(row=1, padx=10, pady=10)
+    ttk.Label(window, text="Task max time (sec)", style='TLabel').grid(row=1, padx=10, pady=10)
 
+    # Task max time (sec)
     side = tk.StringVar(value='Right')
     side_val = ('Right', 'Left')
     side_combobox = ttk.Combobox(window, values=side_val, textvariable=side, font=FONT, width=WIDGET_WIDTH)
     side_combobox.grid(row=2, column=1)
     ttk.Label(window, text="Side:", style='TLabel').grid(row=2, padx=10, pady=10)
 
+    #  calibration_hand
+    calibration_hand = tk.StringVar(value="Right")
+    frame = ttk.Frame(window)
+    frame.grid(row=3, column=1)
+    ttk.Radiobutton(frame, text="Right", variable=calibration_hand, value="Right").grid(row=0, column=0)
+    ttk.Radiobutton(frame, text="Left", variable=calibration_hand, value="Left").grid(row=0, column=1)
+    ttk.Label(window, text="Calibration Hand", style='TLabel').grid(row=3, padx=10, pady=10)
+
     apple_position = tk.IntVar(value=210)
     on_button_click = lambda: on_click(window, repeat, time, side, apple_position)
     b1 = ttk.Button(window, text='Start', command=on_button_click)
     style.configure('TButton', font=FONT)
-    b1.grid(row=3, column=0, columnspan=2, pady=(30, 10))
+    b1.grid(row=4, column=0, columnspan=2, pady=(30, 10))
 
     apple_scale = ttk.Scale(window, from_=0, to=200, length=200, variable=apple_position, orient='horizontal')
-    apple_scale.grid(row=4, column=0, columnspan=2)
+    apple_scale.grid(row=5, column=0, columnspan=2)
     scale_value = tk.StringVar()
 
     def on_scale_value_change(value):
@@ -65,7 +76,7 @@ def run_gui():
     scale_value_label.grid(row=4, column=1, columnspan=1)
 
     webcam_label = tk.Label(window)
-    webcam_label.grid(row=5, column=0, columnspan=2)
+    webcam_label.grid(row=6, column=0, columnspan=2)
 
     cap = cv2.VideoCapture(0)
     holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
@@ -86,9 +97,13 @@ def run_gui():
                 apple_size = int(shoulder_size / 3)
                 red_apple = cv2.imread(RED_APPLE_PATH)
                 red_apple = cv2.resize(red_apple, (apple_size, apple_size))
-
                 alpha = apple_position.get() / 100
-                add_image(frame, red_apple, (right_shoulder_y, int(right_shoulder_x - shoulder_size * alpha)), 1)
+
+                if calibration_hand.get() == 'Right':
+                    add_image(frame, red_apple, (right_shoulder_y, int(right_shoulder_x - shoulder_size * alpha)), 1)
+                else:
+                    add_image(frame, red_apple, (left_shoulder_y, int(left_shoulder_y + shoulder_size * alpha)), 1)
+
                 apple_scale['to'] = frame.shape[1]
 
                 frame = cv2.flip(frame, 1)
