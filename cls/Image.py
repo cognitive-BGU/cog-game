@@ -12,6 +12,7 @@ class Image:
         self.alpha = 1.0
         self.location = location
         self.has_touched = False
+        self.is_disappearing = False
 
     def resize(self):
         return cv2.resize(self.logo, (self.size, self.size))

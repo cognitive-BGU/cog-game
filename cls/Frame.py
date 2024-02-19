@@ -6,6 +6,8 @@ import numpy as np
 from cls import Stage
 from src.const import *
 
+LIGHT_BLUE = (255, 191, 0)
+
 
 class Frame:
     def __init__(self, frame):
@@ -18,14 +20,18 @@ class Frame:
         self.frame = cv2.flip(self.frame, 1)
 
     def update_current_image(self, stage):
-        if stage.image.has_touched:
+        if stage.image.has_touched and not stage.image.is_disappearing:
+            stage.add_success()
+            stage.image.is_disappearing = True
+
+        if stage.image.is_disappearing:
             stage.image.disappear()
 
         if stage.image.size > 0:
             resized_image = stage.image.resize()
             self.add_image(resized_image, stage.image.location, stage.image.alpha)
-        else:
-            stage.add_success()
+        elif time.time() - stage.last_success > 3:
+            stage.set_next()
 
     def add_image(self, img, location, alpha):
         img2gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -81,6 +87,5 @@ class Frame:
         text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
         text_x = int((self.frame.shape[1] - text_size[0]) / 2)
         text_y = int((self.frame.shape[0] + text_size[1]) / 2)
-        LIGHT_BLUE = (255, 191, 0)
         cv2.putText(self.frame, text, (text_x, text_y), font, font_scale, LIGHT_BLUE, thickness)
 

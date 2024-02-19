@@ -6,7 +6,6 @@ from src.const import *
 from src.sound import play_sound
 from src.json_utils import save_to_json
 
-
 FIRST_STAGE = 1
 
 
@@ -18,12 +17,12 @@ def run_game(config, source=0):
     pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-    save_to_json({'config': config}, 'data.json')
+    save_to_json({'config': config})
 
     Stage.apple_dist = config['alpha']
     stage = Stage(FIRST_STAGE, config['trials'])
     task_start_time = time.time()
-    save_to_json({'task_start_time': time.time()}, 'data.json')
+    save_to_json({'task_start_time': time.time()})
 
     frame = Frame(None)
     while True:
@@ -46,19 +45,19 @@ def run_game(config, source=0):
                     task_start_time = time.time()
 
             frame.flip()
-            if stage.number:
-                remain_time = float(config['max_time']) - float(time.time() - task_start_time)
-                frame.add_proces_bar(config['trials'], stage.success)
-                frame.show_time(remain_time)
-                if stage.number and remain_time < 0:
-                    play_sound(TIMEOUT_SOUND)
-                    task_start_time = time.time()
-                    if stage.is_last_stage():
-                        stage.success = config['trials']
-                    else:
-                        stage = Stage(stage.number + 1, config['trials'])
-            else:  # calibration
+            frame.add_proces_bar(config['trials'], stage.success)
+
+            remain_time = float(config['max_time']) - float(time.time() - task_start_time)
+            frame.show_time(remain_time)
+
+            # timeout
+            if remain_time < 0:
+                play_sound(TIMEOUT_SOUND)
                 task_start_time = time.time()
+                if stage.is_last_stage():
+                    stage.success = config['trials']
+                else:
+                    stage = Stage(stage.number + 1, config['trials'])
 
         else:
             frame.resize()

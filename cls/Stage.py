@@ -9,7 +9,7 @@ import numpy as np
 LOCATION = [0, 0]
 FIRST_APPLE_ANGLE = 20
 SECOND_APPLE_ANGLE = 35
-TIME_BETWEEN_TRAILS = 4
+TIME_BETWEEN_TRAILS = 10
 
 
 class Stage:
@@ -21,17 +21,21 @@ class Stage:
         self.image = Image(IMAGES[number], LOCATION)
         self.success = 0
         self.trials = trials
-        save_to_json({number: time.time()}, 'data.json')
+        save_to_json({number: time.time()})
 
     def add_success(self):
-        if time.time() - self.last_success > TIME_BETWEEN_TRAILS:
-            self.success += 1
-            if self.success == self.trials:
-                if self.number < len(IMAGES) - 1:
-                    play_sound(END_TASK_SOUND)
-                    self.__init__(self.number + 1, self.trials)
-            else:
-                self.image = Image(IMAGES[self.number], LOCATION)
+        self.success += 1
+
+    def set_next(self):
+        if self.success == self.trials:  # next stage
+            if self.number < len(IMAGES) - 1:
+                play_sound(END_TASK_SOUND)
+                self.__init__(self.number + 1, self.trials)
+
+        #if time.time() - self.last_success > TIME_BETWEEN_TRAILS:
+        else:
+            self.image = Image(IMAGES[self.number], LOCATION)
+
 
     def check_touched(self, pose_results, mp_pose, hand_results):
         try:
