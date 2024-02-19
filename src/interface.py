@@ -24,6 +24,7 @@ def run_gui():
     window.iconbitmap(SETTING_ICON)
     window.geometry(calculate_window_geometry(window))
     window.configure(bg='white')
+    window.columnconfigure(3, weight=3, pad=3)
 
     window.columnconfigure(0, weight=1, pad=3)
     window.columnconfigure(1, weight=1, pad=1)
@@ -76,15 +77,16 @@ def run_gui():
     scale_value_label.grid(row=4, column=1, columnspan=1)
 
     webcam_label = tk.Label(window)
-    webcam_label.grid(row=6, column=0, columnspan=2)
+    webcam_label.grid(row=0, column=3, rowspan=7)
 
     cap = cv2.VideoCapture(0)
     holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
     def show_frame():
+        SCALE = 1.4
         ret, frame = cap.read()
         if ret:
-            frame = cv2.resize(frame, (640, 480))
+            frame = cv2.resize(frame, (int(640 * SCALE), int(480 * SCALE)))
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = holistic.process(image)
             if results.pose_landmarks:
@@ -102,14 +104,14 @@ def run_gui():
                 if calibration_hand.get() == 'Right':
                     add_image(frame, red_apple, (right_shoulder_y, int(right_shoulder_x - shoulder_size * alpha)), 1)
                 else:
-                    add_image(frame, red_apple, (left_shoulder_y, int(left_shoulder_y + shoulder_size * alpha)), 1)
+                    add_image(frame, red_apple, (left_shoulder_y, int(left_shoulder_y + shoulder_size * alpha - apple_size)), 1)
 
                 apple_scale['to'] = frame.shape[1]
 
                 frame = cv2.flip(frame, 1)
                 man = cv2.imread(MAN_PATH)
-                man = cv2.resize(man, (550, 550))
-                add_image(frame, man, (110, 45), 1)
+                man = cv2.resize(man, (int(510* SCALE), int(510* SCALE)))
+                add_image(frame, man, (int(150* SCALE), int(45* SCALE)), 1)
 
                 rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 pil_image = Image.fromarray(rgb_image)
