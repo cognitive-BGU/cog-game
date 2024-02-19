@@ -15,7 +15,6 @@ PARROT_PATH = 'images/parrot.png'
 PARROT_DIS_PATH = 'images/parrot_dis.png'
 IMAGES = [MAN_PATH, RED_APPLE_PATH, RED_APPLE_PATH, HAT_PATH, PARROT_PATH]
 
-
 SUCCESS_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'success-sound.wav')
 END_TASK_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'completion.wav')
 TIMEOUT_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'timeout.wav')
@@ -32,9 +31,16 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 DARK_GREEN = (0, 120, 0)
 
-#clock
+# clock
 CLOCK_PATH = 'images/clock.png'
 CLOCK_LOCATION = 500, 50
 ORANGE = (0, 165, 255)
 RED = (0, 0, 255)
+
+# calibration
+SCALE = 1.4
+MAN_SIZE = (int(450 * SCALE), int(450 * SCALE))
+FRAME_SIZE_CLB = (int(640 * SCALE), int(480 * SCALE))
+#MAN_LOCATION = (int(150 * SCALE), int(45 * SCALE))
+MAN_LOCATION = (int(210), int(FRAME_SIZE_CLB[0]//2 - MAN_SIZE[0]//2))
 

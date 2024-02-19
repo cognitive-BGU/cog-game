@@ -6,8 +6,7 @@ import tkinter.messagebox as messagebox
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
-
-from src.const import RED_APPLE_PATH, MAN_PATH
+from src.const import *
 
 config = {}
 FONT = ("Verdana", 14)
@@ -60,21 +59,19 @@ def run_gui():
     ttk.Label(window, text="Calibration Hand", style='TLabel').grid(row=3, padx=10, pady=10)
 
     apple_position = tk.IntVar(value=210)
-    on_button_click = lambda: on_click(window, repeat, time, side, apple_position)
-    b1 = ttk.Button(window, text='Start', command=on_button_click)
-    style.configure('TButton', font=FONT)
-    b1.grid(row=4, column=0, columnspan=2, pady=(30, 10))
 
     apple_scale = ttk.Scale(window, from_=0, to=200, length=200, variable=apple_position, orient='horizontal')
     apple_scale.grid(row=5, column=0, columnspan=2)
     scale_value = tk.StringVar()
 
-    def on_scale_value_change(value):
-        scale_value.set(f"Distance: {value / 100} * Shoulder Size")
-
-    apple_position.trace("w", lambda *args: on_scale_value_change(apple_position.get()))
+    apple_position.trace("w", lambda *args: scale_value.set(f"Distance: {apple_position.get() / 100} * Shoulder Size"))
     scale_value_label = ttk.Label(window, textvariable=scale_value, font=FONT)
-    scale_value_label.grid(row=4, column=1, columnspan=1)
+    scale_value_label.grid(row=4, column=0, columnspan=2)
+
+    on_button_click = lambda: on_click(window, repeat, time, side, apple_position)
+    b1 = ttk.Button(window, text='Start', command=on_button_click)
+    style.configure('TButton', font=FONT)
+    b1.grid(row=6, column=0, columnspan=2, pady=(30, 10))
 
     webcam_label = tk.Label(window)
     webcam_label.grid(row=0, column=3, rowspan=7)
@@ -83,10 +80,9 @@ def run_gui():
     holistic = mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
     def show_frame():
-        SCALE = 1.4
         ret, frame = cap.read()
         if ret:
-            frame = cv2.resize(frame, (int(640 * SCALE), int(480 * SCALE)))
+            frame = cv2.resize(frame, FRAME_SIZE_CLB)
             image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = holistic.process(image)
             if results.pose_landmarks:
@@ -104,14 +100,14 @@ def run_gui():
                 if calibration_hand.get() == 'Right':
                     add_image(frame, red_apple, (right_shoulder_y, int(right_shoulder_x - shoulder_size * alpha)), 1)
                 else:
-                    add_image(frame, red_apple, (left_shoulder_y, int(left_shoulder_y + shoulder_size * alpha - apple_size)), 1)
+                    add_image(frame, red_apple, (left_shoulder_y, int(left_shoulder_x + shoulder_size * alpha - apple_size)), 1)
 
                 apple_scale['to'] = frame.shape[1]
 
                 frame = cv2.flip(frame, 1)
                 man = cv2.imread(MAN_PATH)
-                man = cv2.resize(man, (int(510* SCALE), int(510* SCALE)))
-                add_image(frame, man, (int(150* SCALE), int(45* SCALE)), 1)
+                man = cv2.resize(man, MAN_SIZE)
+                add_image(frame, man, MAN_LOCATION, 1)
 
                 rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 pil_image = Image.fromarray(rgb_image)
