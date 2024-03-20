@@ -7,7 +7,7 @@ from cls import Stage
 from src.const import *
 
 LIGHT_BLUE = (255, 191, 0)
-
+TIME_BETWEEN_TRAILS = 3
 
 class Frame:
     def __init__(self, frame):
@@ -30,7 +30,7 @@ class Frame:
         if stage.image.size > 0:
             resized_image = stage.image.resize()
             self.add_image(resized_image, stage.image.location, stage.image.alpha)
-        elif time.time() - stage.last_success > 3:
+        elif time.time() - stage.last_success > TIME_BETWEEN_TRAILS:
             stage.set_next()
 
     def add_image(self, img, location, alpha):

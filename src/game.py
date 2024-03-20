@@ -35,10 +35,10 @@ def run_game(config, source=0):
             frame.resize()
 
             pose_results = pose.process(frame.frame)
-            stage.update_image_location(pose_results, mp_pose, config['side'])
             hand_results = hands.process(cv2.cvtColor(frame.frame, cv2.COLOR_BGR2RGB))
+            stage.update_image_location(pose_results, mp_pose, config['side'])
 
-            if stage.check_touched(pose_results, mp_pose, hand_results) and not stage.image.has_touched:
+            if not stage.image.has_touched and stage.check_touched(pose_results, mp_pose, hand_results):
                 Stage.last_success = time.time()
                 stage.image.set_touched()
                 if stage.success == config['trials'] - 1:
