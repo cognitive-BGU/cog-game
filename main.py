@@ -7,5 +7,3 @@ if __name__ == '__main__':
     config = run_gui()
     run_game(config, COMP_CAMERA)
 
-print("hello world")
-print("llofghfgj")

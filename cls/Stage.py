@@ -59,13 +59,17 @@ class Stage:
                     self.add_success()
                     return True
 
+
         else:  # tasks
             if hand_results.multi_hand_landmarks:
+                touch_area_padding = 6  # Adjust this value to increase or decrease the touch area
                 for hand_landmarks in hand_results.multi_hand_landmarks:
                     for id, landmark in enumerate(hand_landmarks.landmark):
                         y, x = int(landmark.x * FRAME_WIDTH), int(landmark.y * FRAME_HEIGHT)
-                        if (self.image.location[0] <= x <= self.image.location[0] + self.image.size and
-                                self.image.location[1] <= y <= self.image.location[1] + self.image.size):
+                        if (self.image.location[0] - touch_area_padding <= x <= self.image.location[
+                            0] + self.image.size + touch_area_padding and
+                                self.image.location[1] - touch_area_padding <= y <= self.image.location[
+                                    1] + self.image.size + touch_area_padding):
                             return True
 
         return False
