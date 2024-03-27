@@ -1,10 +1,11 @@
 import time
 from cls.Image import Image
-from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center
+from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center, calculate_distance_from_coordinates
 from src.json_utils import save_to_json
 from src.sound import play_sound
 from src.const import *
 import numpy as np
+import cv2
 
 LOCATION = [0, 0]
 FIRST_APPLE_ANGLE = 20
@@ -61,14 +62,31 @@ class Stage:
 
         else:  # tasks
             if hand_results.multi_hand_landmarks:
-                for hand_landmarks in hand_results.multi_hand_landmarks:
-                    for id, landmark in enumerate(hand_landmarks.landmark):
-                        y, x = int(landmark.x * FRAME_WIDTH), int(landmark.y * FRAME_HEIGHT)
-                        if (self.image.location[0] <= x <= self.image.location[0] + self.image.size and
-                                self.image.location[1] <= y <= self.image.location[1] + self.image.size):
-                            return True
+                # Adjust this value to increase or decrease the touch area
+                RADIUS = 10  # Define a threshold for considering a touch as successful
 
+                # Calculate the palm center from the pose landmarks
+                palm_center = calculate_center("RIGHT_PINKY", "RIGHT_THUMB", landmarks, mp_pose)
+                palm_point = {'x': int(palm_center['x']), 'y': int(palm_center['y'])}
+
+                # Define the corners of the object
+                top_left = self.image.location
+                top_right = (self.image.location[0] + self.image.size, self.image.location[1])
+                bottom_left = (self.image.location[0], self.image.location[1] + self.image.size)
+                bottom_right = (self.image.location[0] + self.image.size, self.image.location[1] + self.image.size)
+
+                corners = [top_left, top_right, bottom_left, bottom_right]
+
+                # Check if the distance from the palm center to any of the corners is below the threshold
+                for corner in corners:
+                    corner_cv = {'x': corner[0], 'y': corner[1]}  # Convert corner to cv format
+                    distance = calculate_distance_from_coordinates(palm_point, corner_cv)
+                    if distance < RADIUS:
+                        return True
+
+        # add the previous section with hand_landmarks
         return False
+
 
     def update_image_location(self, results, mp_pose, side):
         try:
