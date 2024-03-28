@@ -12,9 +12,6 @@ FIRST_APPLE_ANGLE = 20
 SECOND_APPLE_ANGLE = 35
 TIME_BETWEEN_TRAILS = 10
 
-def draw_tracking_circles(frame, point, radius, color_index, thickness):
-    color = [(255, 250, 0), (0, 255, 0)]
-    cv2.circle(frame.frame, (int(point['x']), int(point['y'])), radius, color[color_index], thickness)
 
 class Stage:
     last_success = time.time()
@@ -80,11 +77,6 @@ class Stage:
                 # Define image center
                 image_center = {'x': (self.image.location[1]+(self.image.size/2))*2, 'y': (self.image.location[0]+(self.image.size/2))*2}
 
-                # draw tracking circles around the palm and the image
-                draw_tracking_circles(frame, palm_point, RADIUS, 0, 1)
-                draw_tracking_circles(frame, palm_point, 1, 1, 10)
-                draw_tracking_circles(frame, image_center, 1, 1, -1)
-                draw_tracking_circles(frame, image_center, self.image.size, 0, 1)
 
                 # Check if the distance from the palm center to the center of the image is below image_radius + RADIUS
                 distance = calculate_distance_from_coordinates(palm_point, image_center)

@@ -8,7 +8,6 @@ from src.json_utils import save_to_json
 
 from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center, calculate_distance_from_coordinates
 
-
 FIRST_STAGE = 1
 
 def run_game(config, source=0):
