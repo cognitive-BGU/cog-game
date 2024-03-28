@@ -61,6 +61,7 @@ class Stage:
                     self.add_success()
                     return True
 
+
         else:  # tasks
             if hand_results.multi_hand_landmarks: # pose landmark
                 RADIUS = 55
