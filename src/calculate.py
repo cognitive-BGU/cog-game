@@ -28,3 +28,6 @@ def calculate_center(pose1, pose2, landmarks, mp_pose):
     pose2_cv = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[pose2].value])
     center = {'x': (pose1_cv['x'] + pose2_cv['x']) / 2, 'y': (pose1_cv['y'] + pose2_cv['y']) / 2}
     return center
+
+def calculate_distance_from_coordinates(point1, point2):
+    return np.sqrt((point1['x'] - point2['x']) ** 2 + (point1['y'] - point2['y']) ** 2)

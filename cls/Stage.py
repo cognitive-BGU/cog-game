@@ -1,10 +1,11 @@
 import time
 from cls.Image import Image
-from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center
+from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center, calculate_distance_from_coordinates
 from src.json_utils import save_to_json
 from src.sound import play_sound
 from src.const import *
 import numpy as np
+import cv2
 
 LOCATION = [0, 0]
 FIRST_APPLE_ANGLE = 20
@@ -37,7 +38,8 @@ class Stage:
             self.image = Image(IMAGES[self.number], LOCATION)
 
 
-    def check_touched(self, pose_results, mp_pose, hand_results):
+
+    def check_touched(self, pose_results, mp_pose, hand_results, side):
         try:
             landmarks = pose_results.pose_landmarks.landmark
         except:
@@ -61,18 +63,29 @@ class Stage:
 
 
         else:  # tasks
-            if hand_results.multi_hand_landmarks:
-                touch_area_padding = 6  # Adjust this value to increase or decrease the touch area
+            if hand_results.multi_hand_landmarks: # pose landmark
+                RADIUS = 55
+                palm_center = calculate_center(f"{side}_PINKY", f"{side}_INDEX", landmarks, mp_pose)
+                palm_point = {'x': int(palm_center['x'])*2,
+                              'y': int(palm_center['y'])*2}
+                image_center = {'x': (self.image.location[1]+(self.image.size/2))*2,
+                                'y': (self.image.location[0]+(self.image.size/2))*2}
+                distance = calculate_distance_from_coordinates(palm_point, image_center)
+                if distance < RADIUS + self.image.size:
+                    return True
+
+            if hand_results.multi_hand_landmarks:  # hand landmark
+                PADDING = 6
                 for hand_landmarks in hand_results.multi_hand_landmarks:
                     for id, landmark in enumerate(hand_landmarks.landmark):
                         y, x = int(landmark.x * FRAME_WIDTH), int(landmark.y * FRAME_HEIGHT)
-                        if (self.image.location[0] - touch_area_padding <= x <= self.image.location[
-                            0] + self.image.size + touch_area_padding and
-                                self.image.location[1] - touch_area_padding <= y <= self.image.location[
-                                    1] + self.image.size + touch_area_padding):
+                        if (self.image.location[0] - PADDING <= x <= self.image.location[0] + self.image.size + PADDING
+                                and self.image.location[1] - PADDING <= y <= self.image.location[1] + self.image.size + PADDING):
                             return True
 
         return False
+
+
 
     def update_image_location(self, results, mp_pose, side):
         try:
