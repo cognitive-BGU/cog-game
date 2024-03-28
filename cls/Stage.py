@@ -38,7 +38,7 @@ class Stage:
             self.image = Image(IMAGES[self.number], LOCATION)
 
 
-    def check_touched(self, pose_results, mp_pose, hand_results):
+    def check_touched(self, pose_results, mp_pose, hand_results, frame):
         try:
             landmarks = pose_results.pose_landmarks.landmark
         except:
@@ -63,30 +63,34 @@ class Stage:
         else:  # tasks
             if hand_results.multi_hand_landmarks:
                 # Adjust this value to increase or decrease the touch area
-                RADIUS = 10  # Define a threshold for considering a touch as successful
+                RADIUS = 55  # Define a threshold for considering a touch as successful
 
                 # Calculate the palm center from the pose landmarks
-                palm_center = calculate_center("RIGHT_PINKY", "RIGHT_THUMB", landmarks, mp_pose)
-                palm_point = {'x': int(palm_center['x']), 'y': int(palm_center['y'])}
+                palm_center = calculate_center("RIGHT_PINKY", "RIGHT_INDEX", landmarks, mp_pose)
+                palm_point = {'x': int(palm_center['x'])*2, 'y': int(palm_center['y'])*2}
 
                 # Define the corners of the object
-                top_left = self.image.location
-                top_right = (self.image.location[0] + self.image.size, self.image.location[1])
-                bottom_left = (self.image.location[0], self.image.location[1] + self.image.size)
-                bottom_right = (self.image.location[0] + self.image.size, self.image.location[1] + self.image.size)
 
-                corners = [top_left, top_right, bottom_left, bottom_right]
+                image_center = {'x': (self.image.location[1]+(self.image.size/2))*2, 'y': (self.image.location[0]+(self.image.size/2))*2}
+
+                color = (255, 250, 0)  # Green
+                thickness = 1
+                #cv2.circle(frame.frame, (int(palm_point['x']), int(palm_point['y'])), RADIUS, color, thickness)
+                #cv2.circle(frame.frame, (int(top_left['x']), int(top_left['y'])), 1, color, -1)
+                #cv2.circle(frame.frame, (int(top_right['x']), int(top_right['y'])), 1, color, -1)
+                #cv2.circle(frame.frame, (int(bottom_left['x']), int(bottom_left['y'])), 1, color, -1)
+                #cv2.circle(frame.frame, (int(bottom_right['x']), int(bottom_right['y'])), 1, color, -1)
+                #cv2.circle(frame.frame, (int(image_center['x']), int(image_center['y'])), 1, color, -1)
+                #cv2.circle(frame.frame, (int(image_center['x']), int(image_center['y'])), self.image.size, color, thickness)
+
 
                 # Check if the distance from the palm center to any of the corners is below the threshold
-                for corner in corners:
-                    corner_cv = {'x': corner[0], 'y': corner[1]}  # Convert corner to cv format
-                    distance = calculate_distance_from_coordinates(palm_point, corner_cv)
-                    if distance < RADIUS:
-                        return True
+                distance = calculate_distance_from_coordinates(palm_point, image_center)
+                if distance < RADIUS + self.image.size:
+                    return True
 
         # add the previous section with hand_landmarks
         return False
-
 
     def update_image_location(self, results, mp_pose, side):
         try:

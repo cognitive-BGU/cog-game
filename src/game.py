@@ -62,7 +62,7 @@ def run_game(config, source=0):
 
         if not stage.is_last_trial():
             frame.update_current_image(stage)
-            frame.resize()
+
 
             pose_results = pose.process(frame.frame)
             hand_results = hands.process(cv2.cvtColor(frame.frame, cv2.COLOR_BGR2RGB))
@@ -70,17 +70,26 @@ def run_game(config, source=0):
 
         ###
 
-            pinky_location = find_pinky(pose_results, mp_pose)
-            shoulder_location = find_shoulder(pose_results, mp_pose)
+            try:
+                landmarks = pose_results.pose_landmarks.landmark
+                pinky_location = find_pinky(pose_results, mp_pose)
+                right_index = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_INDEX.value])
 
-            palm_center = calculate_center("RIGHT_PINKY", "RIGHT_THUMB", pose_results.pose_landmarks.landmark, mp_pose)
-            draw_location(frame.frame, shoulder_location)  #palm_center ##pinky_location
+                palm_center = calculate_center("RIGHT_PINKY", "RIGHT_INDEX", pose_results.pose_landmarks.landmark, mp_pose)
+                #draw_location(frame.frame, pinky_location)  #palm_center ##pinky_location ##shoulder_location
+                #draw_location(frame.frame, right_index)
+                draw_location(frame.frame, palm_center)
+                color = (255, 250, 0)  # Green
+                thickness = 1
+                #cv2.circle(frame.frame, (int(palm_center['x']), int(palm_center['y'])), 25, color, thickness)
+            except:
+                pass
         ###
 
-
+            frame.resize()
             stage.update_image_location(pose_results, mp_pose, config['side'])
 
-            if not stage.image.has_touched and stage.check_touched(pose_results, mp_pose, hand_results):
+            if not stage.image.has_touched and stage.check_touched(pose_results, mp_pose, hand_results,frame):
                 Stage.last_success = time.time()
                 stage.image.set_touched()
                 if stage.success == config['trials'] - 1:
