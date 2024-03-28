@@ -39,7 +39,7 @@ class Stage:
 
 
 
-    def check_touched(self, pose_results, mp_pose, hand_results, frame, side):
+    def check_touched(self, pose_results, mp_pose, hand_results, side):
         try:
             landmarks = pose_results.pose_landmarks.landmark
         except:
@@ -62,26 +62,25 @@ class Stage:
                     return True
 
         else:  # tasks
-            if hand_results.multi_hand_landmarks:
-
-                RADIUS = 55  # radius around the palm
-
-                if (side == 'RIGHT'):
-                    palm_center = calculate_center("RIGHT_PINKY", "RIGHT_INDEX", landmarks, mp_pose)
-                else:
-                    palm_center = calculate_center("LEFT_PINKY", "LEFT_INDEX", landmarks, mp_pose)
-
-                # adjust point to coordinates
-                palm_point = {'x': int(palm_center['x'])*2, 'y': int(palm_center['y'])*2}
-
-                # Define image center
-                image_center = {'x': (self.image.location[1]+(self.image.size/2))*2, 'y': (self.image.location[0]+(self.image.size/2))*2}
-
-
-                # Check if the distance from the palm center to the center of the image is below image_radius + RADIUS
+            if hand_results.multi_hand_landmarks: # pose landmark
+                RADIUS = 55
+                palm_center = calculate_center(f"{side}_PINKY", f"{side}_INDEX", landmarks, mp_pose)
+                palm_point = {'x': int(palm_center['x'])*2,
+                              'y': int(palm_center['y'])*2}
+                image_center = {'x': (self.image.location[1]+(self.image.size/2))*2,
+                                'y': (self.image.location[0]+(self.image.size/2))*2}
                 distance = calculate_distance_from_coordinates(palm_point, image_center)
                 if distance < RADIUS + self.image.size:
                     return True
+
+            if hand_results.multi_hand_landmarks:  # hand landmark
+                PADDING = 6
+                for hand_landmarks in hand_results.multi_hand_landmarks:
+                    for id, landmark in enumerate(hand_landmarks.landmark):
+                        y, x = int(landmark.x * FRAME_WIDTH), int(landmark.y * FRAME_HEIGHT)
+                        if (self.image.location[0] - PADDING <= x <= self.image.location[0] + self.image.size + PADDING
+                                and self.image.location[1] - PADDING <= y <= self.image.location[1] + self.image.size + PADDING):
+                            return True
 
         return False
 
