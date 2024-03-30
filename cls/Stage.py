@@ -12,6 +12,11 @@ FIRST_APPLE_ANGLE = 20
 SECOND_APPLE_ANGLE = 35
 TIME_BETWEEN_TRAILS = 10
 
+'''
+def draw_tracking_circles(frame, point, radius, color_index, thickness):
+    color = [(255, 250, 0), (0, 255, 0)]
+    cv2.circle(frame.frame, (int(point['x']), int(point['y'])), radius, color[color_index], thickness)
+'''
 
 class Stage:
     last_success = time.time()
@@ -36,7 +41,6 @@ class Stage:
         #if time.time() - self.last_success > TIME_BETWEEN_TRAILS:
         else:
             self.image = Image(IMAGES[self.number], LOCATION)
-
 
 
     def check_touched(self, pose_results, mp_pose, hand_results, frame, side):
@@ -78,13 +82,24 @@ class Stage:
                 image_center = {'x': (self.image.location[1]+(self.image.size/2))*2, 'y': (self.image.location[0]+(self.image.size/2))*2}
 
 
+                # draw tracking circles around the palm and the image
+                #draw_tracking_circles(frame, palm_point, RADIUS, 0, 1)
+                #draw_tracking_circles(frame, palm_point, 1, 1, 10)
+                #draw_tracking_circles(frame, image_center, 1, 1, -1)
+                #draw_tracking_circles(frame, image_center, self.image.size, 0, 1)
+
                 # Check if the distance from the palm center to the center of the image is below image_radius + RADIUS
-                distance = calculate_distance_from_coordinates(palm_point, image_center)
-                if distance < RADIUS + self.image.size:
-                    return True
+                if self.number in (1, 2, 3):
+                    distance = calculate_distance_from_coordinates(palm_point, image_center)
+                    if distance < RADIUS + self.image.size:
+                        return True
+                # in parrot stage get only the top half of the image
+                elif self.number == 4 and palm_point['y'] <= (self.image.location[0]+(self.image.size/2))*2:
+                    distance = calculate_distance_from_coordinates(palm_point, image_center)
+                    if distance < RADIUS + self.image.size:
+                        return True
 
         return False
-
 
 
     def update_image_location(self, results, mp_pose, side):
