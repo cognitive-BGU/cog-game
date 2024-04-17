@@ -1,6 +1,6 @@
 import time
 from cls.Image import Image
-from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center, calculate_distance_from_coordinates
+from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center, calculate_distance_from_coordinates, calculate_center_3d, calculate_angle_3d, adjust_coor
 from src.json_utils import save_to_json
 from src.sound import play_sound
 from src.const import *
@@ -12,11 +12,11 @@ FIRST_APPLE_ANGLE = 20
 SECOND_APPLE_ANGLE = 35
 TIME_BETWEEN_TRAILS = 10
 
-'''
+
 def draw_tracking_circles(frame, point, radius, color_index, thickness):
     color = [(255, 250, 0), (0, 255, 0)]
     cv2.circle(frame.frame, (int(point['x']), int(point['y'])), radius, color[color_index], thickness)
-'''
+
 
 class Stage:
     last_success = time.time()
@@ -43,7 +43,7 @@ class Stage:
             self.image = Image(IMAGES[self.number], LOCATION)
 
 
-    def check_touched(self, pose_results, mp_pose, hand_results, frame, side):
+    def check_touched(self, pose_results, mp_pose, hand_results, side, frame):
         try:
             landmarks = pose_results.pose_landmarks.landmark
         except:
@@ -82,12 +82,60 @@ class Stage:
                 image_center = {'x': (self.image.location[1]+(self.image.size/2))*2, 'y': (self.image.location[0]+(self.image.size/2))*2}
 
 
+                ###
+
+                # locations of: rib, shoulder and elbow
+                shoulder_rLoc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
+                elbow_rLoc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value])
+                hip_rLoc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value])
+                rib_rLoc = calculate_center_3d(shoulder_rLoc, hip_rLoc)
+
+                # calculate the angle
+                angle_3D = calculate_angle_3d(elbow_rLoc, shoulder_rLoc, rib_rLoc)
+                angle_2D = calculate_angle(elbow_rLoc, shoulder_rLoc, rib_rLoc)
+
+                # print the parameters
+                # Define the text parameters
+                text_position1 = (10, 30)
+                text_position2 = (10, 55)
+                text_position3 = (10, 70)
+                text_position4 = (10, 95)
+                text_position5 = (10, 125)
+
+
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 1
+                color = (0, 255, 0)
+                thickness = 2
+
+                # putting text on the frame
+                frame.flip()
+                #cv2.putText(frame.frame, f"shoulder_r: {shoulder_Zaxis['z']:.2f}", text_position1, font, font_scale, color, thickness)
+                #cv2.putText(frame.frame, f"elbow_r: {elbow_r:.2f}", text_position2, font, font_scale, color, thickness)
+                #cv2.putText(frame.frame, f"rib_r: {rib_r:.2f}", text_position3, font, font_scale, color, thickness)
+                cv2.putText(frame.frame, f"angle_3D: {angle_3D:.2f}", text_position4, font, font_scale, color, thickness)
+                cv2.putText(frame.frame, f"angle_2D: {angle_2D:.2f}", text_position5, font, font_scale, color, thickness)
+                frame.flip()
+
+                shoulder_r = adjust_coor(landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value]))
+                elbow_r = adjust_coor(landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value]))
+                hip_r = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value])
+                rib_r = adjust_coor(calculate_center_3d(landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value]), hip_r))
+
+                draw_tracking_circles(frame, palm_point, 1, 1, 10)
+                draw_tracking_circles(frame, shoulder_r, 1, 0, 10)
+                draw_tracking_circles(frame, elbow_r, 1, 0, 10)
+                draw_tracking_circles(frame, rib_r, 1, 0, 10)
+
+
                 # draw tracking circles around the palm and the image
                 #draw_tracking_circles(frame, palm_point, RADIUS, 0, 1)
                 #draw_tracking_circles(frame, palm_point, 1, 1, 10)
                 #draw_tracking_circles(frame, image_center, 1, 1, -1)
                 #draw_tracking_circles(frame, image_center, self.image.size, 0, 1)
 
+                ###
+                '''
                 # Check if the distance from the palm center to the center of the image is below image_radius + RADIUS
                 if self.number in (1, 2, 3):
                     distance = calculate_distance_from_coordinates(palm_point, image_center)
@@ -98,7 +146,7 @@ class Stage:
                     distance = calculate_distance_from_coordinates(palm_point, image_center)
                     if distance < RADIUS + self.image.size:
                         return True
-
+                '''
         return False
 
 
