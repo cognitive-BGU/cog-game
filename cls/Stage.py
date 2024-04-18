@@ -1,6 +1,6 @@
 import time
 from cls.Image import Image
-from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center, calculate_distance_from_coordinates, calculate_center_3d, calculate_angle_3d, adjust_coor
+from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center, calculate_distance_from_coordinates, calculate_center_3D, calculate_angle_3D, adjust_coor
 from src.json_utils import save_to_json
 from src.sound import play_sound
 from src.const import *
@@ -70,6 +70,25 @@ class Stage:
 
                 RADIUS = 55  # radius around the palm
 
+                # 3D funcuality
+                if (side == 'RIGHT'):
+                    right_pinky = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_PINKY.value])
+                    right_index = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_INDEX.value])
+                    palm_center = calculate_center_3D(right_index, right_pinky)
+                else:
+                    left_pinky = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_PINKY.value])
+                    left_index = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_INDEX.value])
+                    palm_center = calculate_center_3D(left_index, left_pinky)
+
+                    # adjust point to coordinates
+                palm_point = {'x': int(palm_center['x']) * 2, 'y': int(palm_center['y']) * 2, 'z': int(palm_center['z']) * 2}
+
+                # Define image center
+                image_center = {'x': (self.image.location[1] + (self.image.size / 2)) * 2,
+                                'y': (self.image.location[0] + (self.image.size / 2)) * 2}
+
+
+                '''
                 if (side == 'RIGHT'):
                     palm_center = calculate_center("RIGHT_PINKY", "RIGHT_INDEX", landmarks, mp_pose)
                 else:
@@ -80,37 +99,45 @@ class Stage:
 
                 # Define image center
                 image_center = {'x': (self.image.location[1]+(self.image.size/2))*2, 'y': (self.image.location[0]+(self.image.size/2))*2}
-
+                '''
 
                 ###
 
                 # locations of: rib, shoulder and elbow
+                nose_loc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.NOSE.value])
                 shoulder_rLoc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
                 elbow_rLoc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value])
                 hip_rLoc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value])
-                rib_rLoc = calculate_center_3d(shoulder_rLoc, hip_rLoc)
+                rib_rLoc = calculate_center_3D(shoulder_rLoc, hip_rLoc)
 
                 # calculate the angle
-                angle_3D = calculate_angle_3d(elbow_rLoc, shoulder_rLoc, rib_rLoc)
+                angle_3D = calculate_angle_3D(elbow_rLoc, shoulder_rLoc, rib_rLoc)
                 angle_2D = calculate_angle(elbow_rLoc, shoulder_rLoc, rib_rLoc)
 
-                # print the parameters
+                # palm point 3D
+                palm_point_3D = {'x': int(palm_center['x']) * 2, 'y': int(palm_center['y']) * 2, 'z': int(palm_center['z']) * 2}
+
+                #nose point standrtiztion
+                nose_point_3D = {'x': int(nose_loc['x']) * 2, 'y': int(nose_loc['y']) * 2, 'z': int(nose_loc['z']) * 2}
+
+
                 # Define the text parameters
-                text_position1 = (10, 30)
-                text_position2 = (10, 55)
+                text_position1 = (10, 35)
+                text_position2 = (10, 80)
                 text_position3 = (10, 70)
-                text_position4 = (10, 95)
-                text_position5 = (10, 125)
+                text_position4 = (10, 135)
+                text_position5 = (10, 175)
 
 
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                font_scale = 1
-                color = (0, 255, 0)
+                font_scale = 1.5
+                color = (0, 0, 0)
                 thickness = 2
 
                 # putting text on the frame
                 frame.flip()
-                #cv2.putText(frame.frame, f"shoulder_r: {shoulder_Zaxis['z']:.2f}", text_position1, font, font_scale, color, thickness)
+                cv2.putText(frame.frame, f"palm_centerZ: {palm_point['z']:.2f}", text_position1, font, font_scale, color, thickness)
+                cv2.putText(frame.frame, f"noseZ: {nose_loc['z']:.2f}", text_position2, font, font_scale, color, thickness)
                 #cv2.putText(frame.frame, f"elbow_r: {elbow_r:.2f}", text_position2, font, font_scale, color, thickness)
                 #cv2.putText(frame.frame, f"rib_r: {rib_r:.2f}", text_position3, font, font_scale, color, thickness)
                 cv2.putText(frame.frame, f"angle_3D: {angle_3D:.2f}", text_position4, font, font_scale, color, thickness)
@@ -120,7 +147,7 @@ class Stage:
                 shoulder_r = adjust_coor(landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value]))
                 elbow_r = adjust_coor(landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value]))
                 hip_r = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value])
-                rib_r = adjust_coor(calculate_center_3d(landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value]), hip_r))
+                rib_r = adjust_coor(calculate_center_3D(landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value]), hip_r))
 
                 draw_tracking_circles(frame, palm_point, 1, 1, 10)
                 draw_tracking_circles(frame, shoulder_r, 1, 0, 10)
@@ -137,7 +164,7 @@ class Stage:
                 ###
                 '''
                 # Check if the distance from the palm center to the center of the image is below image_radius + RADIUS
-                if self.number in (1, 2, 3):
+                if self.number in (1, 2, 3, 5):
                     distance = calculate_distance_from_coordinates(palm_point, image_center)
                     if distance < RADIUS + self.image.size:
                         return True
@@ -193,6 +220,20 @@ class Stage:
                 self.image.size = int(shoulder_distance / 2)
             self.image.location = [int(shoulder_pos['y'] - self.image.size),
                                    int(shoulder_pos['x'] - self.image.size / 2)]
+
+        if self.number == 5:  # green apple
+            # Use the NOSE landmark for placing the apple on the head
+            nose_pos = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.NOSE.value])
+
+            if not self.image.has_touched:
+                # Adjust the size of the apple; consider basing this on a relevant dimension like head size or a static size
+                self.image.size = int(calculate_distance("LEFT_EYE", "RIGHT_EYE", landmarks, mp_pose) * 2.8)
+
+            # Center the apple image on the nose position
+            # Adjust the 'y' offset to position the apple slightly above the nose, simulating it sitting on top of the head
+            self.image.location = [int(nose_pos['y'] - self.image.size * 1),  # Adjust Y to move the image up
+                                   int(nose_pos['x'] - self.image.size / 0.5)]  # Center X
+
 
     def is_last_stage(self):
         return self.number == len(IMAGES) - 1

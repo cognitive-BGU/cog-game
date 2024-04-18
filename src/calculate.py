@@ -33,7 +33,7 @@ def calculate_center(pose1, pose2, landmarks, mp_pose):
 def calculate_distance_from_coordinates(point1, point2):
     return np.sqrt((point1['x'] - point2['x']) ** 2 + (point1['y'] - point2['y']) ** 2)
 
-def calculate_center_3d(pose1, pose2):
+def calculate_center_3D(pose1, pose2):
     #pose1_cv = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[pose1].value])
     #pose2_cv = landmarks_to_cv(landmarks[mp_pose.PoseLandmark[pose2].value])
 
@@ -45,7 +45,7 @@ def calculate_center_3d(pose1, pose2):
     }
     return center
 
-def calculate_angle_3d(a: dict, b: dict, c: dict):
+def calculate_angle_3D(a: dict, b: dict, c: dict):
     # Convert points to numpy vectors
     vec_a = np.array([a['x'], a['y'], a['z']])
     vec_b = np.array([b['x'], b['y'], b['z']])
