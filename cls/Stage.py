@@ -28,9 +28,14 @@ class Stage:
         self.success = 0
         self.trials = trials
         save_to_json({number: time.time()})
+        ##
+        self.palm_z_samples = []  # to store palm z samples
+        self.palm_avgZ = None  # to store the average z value after calibration
+        ##
 
     def add_success(self):
         self.success += 1
+
 
     def set_next(self):
         if self.success == self.trials:  # next stage
@@ -58,13 +63,13 @@ class Stage:
 
             right_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
             left_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
-
             if right_shoulder['x'] < 400 and right_shoulder['y'] > 300:
                 if left_shoulder['x'] > 250 and left_shoulder['y'] > 300:
                     self.success = self.trials - 1
                     self.add_success()
                     return True
 
+        ##############################################################################
         else:  # tasks
             if hand_results.multi_hand_landmarks:
 
@@ -80,7 +85,7 @@ class Stage:
                     left_index = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_INDEX.value])
                     palm_center = calculate_center_3D(left_index, left_pinky)
 
-                    # adjust point to coordinates
+                # adjust point to coordinates
                 palm_point = {'x': int(palm_center['x']) * 2, 'y': int(palm_center['y']) * 2, 'z': int(palm_center['z']) * 2}
 
                 # Define image center
@@ -117,16 +122,22 @@ class Stage:
                 # palm point 3D
                 palm_point_3D = {'x': int(palm_center['x']) * 2, 'y': int(palm_center['y']) * 2, 'z': int(palm_center['z']) * 2}
 
-                #nose point standrtiztion
-                nose_point_3D = {'x': int(nose_loc['x']) * 2, 'y': int(nose_loc['y']) * 2, 'z': int(nose_loc['z']) * 2}
+                #nose point standrtization
+                nose_point_3D = {'x': int(nose_loc['x']) * 2, 'y': int(nose_loc['y']) * 2, 'z': abs(int(nose_loc['z']) * 2)}
 
+                # hip point standrtization
+                hip_point_3D = {'x': int(hip_rLoc['x']) * 2, 'y': int(hip_rLoc['y']) * 2, 'z': abs(int(hip_rLoc['z']) * 2)}
+
+                # absolute value for 'Z' coor for palm_point
+                palm_Zcoor = abs(palm_point['z'])
 
                 # Define the text parameters
                 text_position1 = (10, 35)
                 text_position2 = (10, 80)
-                text_position3 = (10, 70)
-                text_position4 = (10, 135)
-                text_position5 = (10, 175)
+                text_position3 = (10, 120)
+                text_position4 = (10, 160)
+                text_position5 = (10, 195)
+                text_position6 = (10, 240)
 
 
                 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -136,12 +147,13 @@ class Stage:
 
                 # putting text on the frame
                 frame.flip()
-                cv2.putText(frame.frame, f"palm_centerZ: {palm_point['z']:.2f}", text_position1, font, font_scale, color, thickness)
-                cv2.putText(frame.frame, f"noseZ: {nose_loc['z']:.2f}", text_position2, font, font_scale, color, thickness)
+                cv2.putText(frame.frame, f"right_hipZ: {hip_point_3D['z']:.0f}", text_position1, font, font_scale, color, thickness)
+                cv2.putText(frame.frame, f"palm_centerZ: {palm_Zcoor:.0f}", text_position2, font, font_scale, color, thickness)
+                cv2.putText(frame.frame, f"noseZ: {nose_point_3D['z']:.0f}", text_position3, font, font_scale, color, thickness)
                 #cv2.putText(frame.frame, f"elbow_r: {elbow_r:.2f}", text_position2, font, font_scale, color, thickness)
                 #cv2.putText(frame.frame, f"rib_r: {rib_r:.2f}", text_position3, font, font_scale, color, thickness)
-                cv2.putText(frame.frame, f"angle_3D: {angle_3D:.2f}", text_position4, font, font_scale, color, thickness)
-                cv2.putText(frame.frame, f"angle_2D: {angle_2D:.2f}", text_position5, font, font_scale, color, thickness)
+                cv2.putText(frame.frame, f"angle_3D: {angle_3D:.0f}", text_position4, font, font_scale, color, thickness)
+                cv2.putText(frame.frame, f"angle_2D: {angle_2D:.0f}", text_position5, font, font_scale, color, thickness)
                 frame.flip()
 
                 shoulder_r = adjust_coor(landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value]))
@@ -162,6 +174,21 @@ class Stage:
                 #draw_tracking_circles(frame, image_center, self.image.size, 0, 1)
 
                 ###
+
+                if self.number in (1, 2, 3):
+                    distance = calculate_distance_from_coordinates(palm_point, image_center)
+                    if distance < RADIUS + self.image.size:
+                        return True
+                # in parrot stage get only the top half of the image
+                #elif self.number == 4 and palm_point['y'] <= (self.image.location[0]+(self.image.size/2))*2:
+                    #distance = calculate_distance_from_coordinates(palm_point, image_center)
+                    #if distance < RADIUS + self.image.size:
+                        #return True
+                elif self.number == 5:
+                    distance = calculate_distance_from_coordinates(palm_point, image_center)
+                    if distance < RADIUS + self.image.size and 100 <= angle_3D <= 120 and palm_Zcoor > 1200:
+                        return True
+
                 '''
                 # Check if the distance from the palm center to the center of the image is below image_radius + RADIUS
                 if self.number in (1, 2, 3, 5):
