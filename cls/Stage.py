@@ -128,6 +128,8 @@ class Stage:
                 # hip point standrtization
                 hip_point_3D = {'x': int(hip_rLoc['x']) * 2, 'y': int(hip_rLoc['y']) * 2, 'z': abs(int(hip_rLoc['z']) * 2)}
 
+
+
                 # absolute value for 'Z' coor for palm_point
                 palm_Zcoor = abs(palm_point['z'])
 
@@ -174,7 +176,7 @@ class Stage:
                 #draw_tracking_circles(frame, image_center, self.image.size, 0, 1)
 
                 ###
-
+                '''
                 if self.number in (1, 2, 3):
                     distance = calculate_distance_from_coordinates(palm_point, image_center)
                     if distance < RADIUS + self.image.size:
@@ -186,9 +188,9 @@ class Stage:
                         #return True
                 elif self.number == 5:
                     distance = calculate_distance_from_coordinates(palm_point, image_center)
-                    if distance < RADIUS + self.image.size and 100 <= angle_3D <= 120 and palm_Zcoor > 1200:
+                    if distance < RADIUS + self.image.size and 95 <= angle_3D <= 120:   #palm_Zcoor > 1200
                         return True
-
+                '''
                 '''
                 # Check if the distance from the palm center to the center of the image is below image_radius + RADIUS
                 if self.number in (1, 2, 3, 5):
@@ -248,13 +250,13 @@ class Stage:
             self.image.location = [int(shoulder_pos['y'] - self.image.size),
                                    int(shoulder_pos['x'] - self.image.size / 2)]
 
-        if self.number == 5:  # green apple
+        if self.number == 5:  # blue bird
             # Use the NOSE landmark for placing the apple on the head
             nose_pos = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.NOSE.value])
 
             if not self.image.has_touched:
                 # Adjust the size of the apple; consider basing this on a relevant dimension like head size or a static size
-                self.image.size = int(calculate_distance("LEFT_EYE", "RIGHT_EYE", landmarks, mp_pose) * 2.8)
+                self.image.size = int(calculate_distance("LEFT_EYE", "RIGHT_EYE", landmarks, mp_pose) * 3)
 
             # Center the apple image on the nose position
             # Adjust the 'y' offset to position the apple slightly above the nose, simulating it sitting on top of the head
