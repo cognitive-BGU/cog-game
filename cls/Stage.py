@@ -49,7 +49,6 @@ class Stage:
         if time.time() - self.last_success < 2:
             return False
 
-        side_upper = side.upper()
         if self.number == 0:  # calibration
             if calculate_distance('LEFT_SHOULDER', 'RIGHT_SHOULDER', landmarks, mp_pose) > 110:
                 return False
