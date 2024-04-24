@@ -13,11 +13,6 @@ SECOND_APPLE_ANGLE = 35
 TIME_BETWEEN_TRAILS = 10
 
 
-def draw_tracking_circles(frame, point, radius, color_index, thickness):
-    color = [(255, 250, 0), (0, 255, 0)]
-    cv2.circle(frame.frame, (int(point['x']), int(point['y'])), radius, color[color_index], thickness)
-
-
 class Stage:
     last_success = time.time()
     apple_dist = None
@@ -28,10 +23,7 @@ class Stage:
         self.success = 0
         self.trials = trials
         save_to_json({number: time.time()})
-        ##
-        self.palm_z_samples = []  # to store palm z samples
-        self.palm_avgZ = None  # to store the average z value after calibration
-        ##
+
 
     def add_success(self):
         self.success += 1
@@ -57,6 +49,7 @@ class Stage:
         if time.time() - self.last_success < 2:
             return False
 
+        side_upper = side.upper()
         if self.number == 0:  # calibration
             if calculate_distance('LEFT_SHOULDER', 'RIGHT_SHOULDER', landmarks, mp_pose) > 110:
                 return False
@@ -100,8 +93,8 @@ class Stage:
                                 'y': (self.image.location[0] + (self.image.size / 2)) * 2}
 
                 # calculate the angle
-                angle_3D = calculate_angle_3D(elbow_Loc, shoulder_Loc, rib_Loc)
-                angle_elbow = calculate_angle_3D(shoulder_Loc, elbow_Loc, palm_center)
+                angle_shoulder3D = calculate_angle_3D(elbow_Loc, shoulder_Loc, rib_Loc)
+                angle_elbow3D = calculate_angle_3D(shoulder_Loc, elbow_Loc, palm_center)
 
                 if self.number in (1, 2, 3, 4):
                     distance = calculate_distance_from_coordinates(palm_point, image_center)
@@ -109,7 +102,7 @@ class Stage:
                         return True
                 elif self.number == 5:
                     distance = calculate_distance_from_coordinates(palm_point, image_center)
-                    if distance < RADIUS + self.image.size and 90 <= angle_3D <= 120 and angle_elbow > 150:   #palm_Zcoor > 1200
+                    if distance < RADIUS + self.image.size and 90 <= angle_shoulder3D <= 120 and angle_elbow3D > 150:
                         return True
 
         return False
