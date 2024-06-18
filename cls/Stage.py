@@ -39,7 +39,6 @@ class Stage:
         else:
             self.image = Image(IMAGES[self.number], LOCATION)
 
-
     def check_touched(self, pose_results, mp_pose, hand_results, side):
         try:
             landmarks = pose_results.pose_landmarks.landmark
@@ -107,11 +106,10 @@ class Stage:
                 if distance < RADIUS + self.image.size:
                     return True
             elif self.number == 5:
-                if distance < RADIUS + self.image.size and 90 <= angle_shoulder3D <= 120 and angle_elbow3D > 155:
+                if distance < RADIUS + self.image.size and 90 <= angle_shoulder3D <= 120 and angle_elbow3D > 150:
                     return True
 
         return False
-
 
 
     def update_image_location(self, results, mp_pose, side):
