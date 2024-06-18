@@ -43,7 +43,7 @@ class Stage:
     def check_touched(self, pose_results, mp_pose, hand_results, side):
         try:
             landmarks = pose_results.pose_landmarks.landmark
-        except:
+        except AttributeError:
             return False
 
         if time.time() - self.last_success < 2:
@@ -55,56 +55,63 @@ class Stage:
 
             right_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
             left_shoulder = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
-            if right_shoulder['x'] < 400 and right_shoulder['y'] > 300:
-                if left_shoulder['x'] > 250 and left_shoulder['y'] > 300:
-                    self.success = self.trials - 1
-                    self.add_success()
+            if (right_shoulder['x'] < 400 and right_shoulder['y'] > 300 and
+                    left_shoulder['x'] > 250 and left_shoulder['y'] > 300):
+                self.success = self.trials - 1
+                self.add_success()
+                return True
+
+        elif hand_results.multi_hand_landmarks:  # tasks
+            RADIUS = 55  # radius around the palm
+
+            side_landmarks = {
+                'RIGHT': {
+                    'pinky': mp_pose.PoseLandmark.RIGHT_PINKY.value,
+                    'index': mp_pose.PoseLandmark.RIGHT_INDEX.value,
+                    'shoulder': mp_pose.PoseLandmark.RIGHT_SHOULDER.value,
+                    'elbow': mp_pose.PoseLandmark.RIGHT_ELBOW.value,
+                    'hip': mp_pose.PoseLandmark.RIGHT_HIP.value
+                },
+                'LEFT': {
+                    'pinky': mp_pose.PoseLandmark.LEFT_PINKY.value,
+                    'index': mp_pose.PoseLandmark.LEFT_INDEX.value,
+                    'shoulder': mp_pose.PoseLandmark.LEFT_SHOULDER.value,
+                    'elbow': mp_pose.PoseLandmark.LEFT_ELBOW.value,
+                    'hip': mp_pose.PoseLandmark.LEFT_HIP.value
+                }
+            }
+
+            landmarks_side = side_landmarks[side]
+            pinky = landmarks_to_cv(landmarks[landmarks_side['pinky']])
+            index = landmarks_to_cv(landmarks[landmarks_side['index']])
+            palm_center = calculate_center_3D(index, pinky)
+            shoulder_Loc = landmarks_to_cv(landmarks[landmarks_side['shoulder']])
+            elbow_Loc = landmarks_to_cv(landmarks[landmarks_side['elbow']])
+            hip_Loc = landmarks_to_cv(landmarks[landmarks_side['hip']])
+            rib_Loc = calculate_center_3D(shoulder_Loc, hip_Loc)
+
+            # Adjust point to coordinates
+            palm_point = {'x': int(palm_center['x']) * 2, 'y': int(palm_center['y']) * 2,
+                          'z': int(palm_center['z']) * 2}
+
+            # Define image center
+            image_center = {'x': (self.image.location[1] + (self.image.size / 2)) * 2,
+                            'y': (self.image.location[0] + (self.image.size / 2)) * 2}
+
+            # Calculate angles
+            angle_shoulder3D = calculate_angle_3D(elbow_Loc, shoulder_Loc, rib_Loc)
+            angle_elbow3D = calculate_angle_3D(shoulder_Loc, elbow_Loc, palm_center)
+
+            distance = calculate_distance_from_coordinates(palm_point, image_center)
+            if self.number in (1, 2, 3, 4):
+                if distance < RADIUS + self.image.size:
+                    return True
+            elif self.number == 5:
+                if distance < RADIUS + self.image.size and 90 <= angle_shoulder3D <= 120 and angle_elbow3D > 155:
                     return True
 
-        else:  # tasks
-            if hand_results.multi_hand_landmarks:
-
-                RADIUS = 55  # radius around the palm
-
-                # 3D funcuality
-                if (side == 'RIGHT'):
-                    right_pinky = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_PINKY.value])
-                    right_index = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_INDEX.value])
-                    palm_center = calculate_center_3D(right_index, right_pinky)
-                    shoulder_Loc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
-                    elbow_Loc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value])
-                    hip_Loc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value])
-                    rib_Loc = calculate_center_3D(shoulder_Loc, hip_Loc)
-                else:
-                    left_pinky = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_PINKY.value])
-                    left_index = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_INDEX.value])
-                    palm_center = calculate_center_3D(left_index, left_pinky)
-                    shoulder_Loc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value])
-                    elbow_Loc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value])
-                    hip_Loc = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.LEFT_HIP.value])
-                    rib_Loc = calculate_center_3D(shoulder_Loc, hip_Loc)
-
-                # adjust point to coordinates
-                palm_point = {'x': int(palm_center['x']) * 2, 'y': int(palm_center['y']) * 2, 'z': int(palm_center['z']) * 2}
-
-                # Define image center
-                image_center = {'x': (self.image.location[1] + (self.image.size / 2)) * 2,
-                                'y': (self.image.location[0] + (self.image.size / 2)) * 2}
-
-                # calculate the angle
-                angle_shoulder3D = calculate_angle_3D(elbow_Loc, shoulder_Loc, rib_Loc)
-                angle_elbow3D = calculate_angle_3D(shoulder_Loc, elbow_Loc, palm_center)
-
-                if self.number in (1, 2, 3, 4):
-                    distance = calculate_distance_from_coordinates(palm_point, image_center)
-                    if distance < RADIUS + self.image.size:
-                        return True
-                elif self.number == 5:
-                    distance = calculate_distance_from_coordinates(palm_point, image_center)
-                    if distance < RADIUS + self.image.size and 90 <= angle_shoulder3D <= 120 and angle_elbow3D > 150:
-                        return True
-
         return False
+
 
 
     def update_image_location(self, results, mp_pose, side):
