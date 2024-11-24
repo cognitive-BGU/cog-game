@@ -168,7 +168,7 @@ class Stage:
                 image_x = int(nose_pos['x'] + image_offset_x)
 
             # Keep the Y position the same for both sides
-            image_y = int(nose_pos['y'] - self.image.size * 1)
+            image_y = int(nose_pos['y'] - self.image.size * 0.5)
 
             self.image.location = [image_y, image_x]
 

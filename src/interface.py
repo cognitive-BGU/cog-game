@@ -50,6 +50,16 @@ def run_gui():
     side_combobox.grid(row=2, column=1)
     ttk.Label(window, text="Side:", style='TLabel').grid(row=2, padx=10, pady=10)
 
+    # Patient number
+    patient_ID = tk.StringVar(value='')  # Create a StringVar to hold the patient number
+    patient_label = ttk.Label(window, text="Patient ID:", style='TLabel')  # Create a label for the input field
+    patient_label.grid(row=7, column=0, padx=10, pady=(30, 10))  # Place the label in the grid layout
+
+    patient_entry = ttk.Entry(window, textvariable=patient_ID, font=FONT,
+                              width=WIDGET_WIDTH * 3)  # Create the input field
+    patient_entry.grid(row=7, column=1, pady=(30, 10))  # Place the input field in the grid layout
+
+
     #  calibration_hand
     calibration_hand = tk.StringVar(value="Right")
     frame = ttk.Frame(window)
@@ -68,10 +78,10 @@ def run_gui():
     scale_value_label = ttk.Label(window, textvariable=scale_value, font=FONT)
     scale_value_label.grid(row=4, column=0, columnspan=2)
 
-    on_button_click = lambda: on_click(window, repeat, time, side, apple_position)
-    b1 = ttk.Button(window, text='Start', command=on_button_click)
+    on_button_click = lambda: on_click(window, repeat, time, side, apple_position, patient_ID)
+    b1 = ttk.Button(window, text='Start', command=on_button_click)  # Start button
     style.configure('TButton', font=FONT)
-    b1.grid(row=6, column=0, columnspan=2, pady=(30, 10))
+    b1.grid(row=8, column=0, columnspan=2, pady=(30, 10))  # Adjust row to position below patient input
 
     webcam_label = tk.Label(window)
     webcam_label.grid(row=0, column=3, rowspan=7)
@@ -137,15 +147,18 @@ def add_image(frame, img, location, alpha):
         pass
 
 
-def on_click(window, repeat, time, side, apple_position):
-    result = messagebox.askquestion("Camera Check", "Turn the Logitech camera on", icon='info')
+def on_click(window, repeat, time, side, apple_position, patient_ID):
+    result = messagebox.askquestion("Camera Check", "Turn the Logitech camera on and set it to **60 fps**", icon='info')
     if result == 'yes':
         global config
         window.destroy()
-        config = {'trials': int(repeat.get()),
-                  'max_time': str(time.get()).replace(":", "."),
-                  'side': side.get().upper(),
-                  'alpha': apple_position.get() / 100}
+        config = {
+            'trials': int(repeat.get()),  # Number of trials
+            'max_time': str(time.get()).replace(":", "."),  # Max time
+            'side': side.get().upper(),  # Interaction side
+            'alpha': apple_position.get() / 100,  # Calibration value
+            'patient_ID': patient_ID.get()  # Patient number
+        }
 
 
 def calculate_window_geometry(window):
