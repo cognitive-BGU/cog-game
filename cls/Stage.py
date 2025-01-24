@@ -17,13 +17,14 @@ class Stage:
     last_success = time.time()
     apple_dist = None
 
-    def __init__(self, number, trials):
+    def __init__(self, number, trials, patient_id, filename):
         self.number = number
         self.image = Image(IMAGES[number], LOCATION)
         self.success = 0
         self.trials = trials
-        save_to_json({number: time.time()})
-
+        self.patient_id = patient_id  # שמירת מזהה המטופל לשימוש פנימי
+        self.filename = filename  # שמירת שם הקובץ
+        save_to_json({number: time.time()}, self.patient_id, self.filename)
 
     def add_success(self):
         self.success += 1
@@ -33,12 +34,9 @@ class Stage:
         if self.success == self.trials:  # next stage
             if self.number < len(IMAGES) - 1:
                 play_sound(END_TASK_SOUND)
-                self.__init__(self.number + 1, self.trials)
-
-        #if time.time() - self.last_success > TIME_BETWEEN_TRAILS:
+                self.__init__(self.number + 1, self.trials, self.patient_id, self.filename)
         else:
             self.image = Image(IMAGES[self.number], LOCATION)
-
 
     def check_touched(self, pose_results, mp_pose, hand_results, side):
         try:
@@ -63,11 +61,10 @@ class Stage:
 
         else:  # tasks
             if hand_results.multi_hand_landmarks:
-
                 RADIUS = 55  # radius around the palm
 
-                # 3D funcuality
-                if (side == 'RIGHT'):
+                # 3D functionality
+                if side == 'RIGHT':
                     right_pinky = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_PINKY.value])
                     right_index = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.RIGHT_INDEX.value])
                     palm_center = calculate_center_3D(right_index, right_pinky)
@@ -85,27 +82,37 @@ class Stage:
                     rib_Loc = calculate_center_3D(shoulder_Loc, hip_Loc)
 
                 # adjust point to coordinates
-                palm_point = {'x': int(palm_center['x']) * 2, 'y': int(palm_center['y']) * 2, 'z': int(palm_center['z']) * 2}
+                palm_point = {
+                    'x': int(palm_center['x']) * 2,
+                    'y': int(palm_center['y']) * 2,
+                    'z': int(palm_center['z']) * 2,
+                }
 
                 # Define image center
-                image_center = {'x': (self.image.location[1] + (self.image.size / 2)) * 2,
-                                'y': (self.image.location[0] + (self.image.size / 2)) * 2}
+                image_center = {
+                    'x': (self.image.location[1] + (self.image.size / 2)) * 2,
+                    'y': (self.image.location[0] + (self.image.size / 2)) * 2,
+                }
 
                 # calculate the angle
                 angle_shoulder3D = calculate_angle_3D(elbow_Loc, shoulder_Loc, rib_Loc)
                 angle_elbow3D = calculate_angle_3D(shoulder_Loc, elbow_Loc, palm_center)
 
+                distance = calculate_distance_from_coordinates(palm_point, image_center)
+
                 if self.number in (1, 2, 3, 4):
-                    distance = calculate_distance_from_coordinates(palm_point, image_center)
                     if distance < RADIUS + self.image.size:
                         return True
-                elif self.number == 5:
-                    distance = calculate_distance_from_coordinates(palm_point, image_center)
-                    if distance < RADIUS + self.image.size and 90 <= angle_shoulder3D <= 120 and angle_elbow3D > 150:
+
+                if self.number == 5:
+                    if (
+                            distance < RADIUS + self.image.size
+                            and 90 <= angle_shoulder3D <= 120
+                            and angle_elbow3D > 150
+                    ):
                         return True
 
         return False
-
 
     def update_image_location(self, results, mp_pose, side):
         try:
@@ -142,15 +149,18 @@ class Stage:
             shoulder_center = calculate_center("LEFT_SHOULDER", "RIGHT_SHOULDER", landmarks, mp_pose)
             if not self.image.has_touched:
                 self.image.size = int(shoulder_distance / 3)
-            self.image.location = [int(shoulder_center['y'] - shoulder_distance * 1.25),
-                                   int(shoulder_center['x'] - self.image.size / 2)]
+            self.image.location = [
+                int(shoulder_center['y'] - shoulder_distance * 1.25),
+                int(shoulder_center['x'] - self.image.size / 2),
+            ]
 
         if self.number == 4:  # parrot
             if not self.image.has_touched:
                 self.image.size = int(shoulder_distance / 2)
-            self.image.location = [int(shoulder_pos['y'] - self.image.size),
-                                   int(shoulder_pos['x'] - self.image.size / 2)]
-
+            self.image.location = [
+                int(shoulder_pos['y'] - self.image.size),
+                int(shoulder_pos['x'] - self.image.size / 2),
+            ]
 
         if self.number == 5:  # blue bird
             nose_pos = landmarks_to_cv(landmarks[mp_pose.PoseLandmark.NOSE.value])
@@ -171,7 +181,6 @@ class Stage:
             image_y = int(nose_pos['y'] - self.image.size * 0.5)
 
             self.image.location = [image_y, image_x]
-
 
     def is_last_stage(self):
         return self.number == len(IMAGES) - 1

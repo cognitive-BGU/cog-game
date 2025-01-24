@@ -18,6 +18,7 @@ BIRD_PATH = 'images/bird.png'
 
 IMAGES = [MAN_PATH, RED_APPLE_PATH, RED_APPLE_PATH, HAT_PATH, PARROT_PATH, BIRD_PATH]
 
+
 SUCCESS_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'success-sound.wav')
 END_TASK_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'completion.wav')
 TIMEOUT_SOUND = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'images', 'timeout.wav')

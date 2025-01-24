@@ -5,6 +5,8 @@ from cls.Stage import Stage
 from src.const import *
 from src.sound import play_sound
 from src.json_utils import save_to_json
+import datetime
+
 
 from src.calculate import landmarks_to_cv, calculate_angle, calculate_distance, calculate_center, calculate_distance_from_coordinates
 
@@ -17,12 +19,16 @@ def run_game(config, source=0):
     pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-    save_to_json({'config': config})
+
+    json_filename = f"{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
+
+    save_to_json({'config': config}, config['patient_ID'], json_filename)
 
     Stage.apple_dist = config['alpha']
-    stage = Stage(FIRST_STAGE, config['trials'])
+    stage = Stage(FIRST_STAGE, config['trials'], config['patient_ID'], json_filename)
     task_start_time = time.time()
-    save_to_json({'task_start_time': time.time()})
+
+    save_to_json({'task_start_time': task_start_time}, config['patient_ID'], json_filename)
 
     frame = Frame(None)
     while True:
@@ -56,13 +62,20 @@ def run_game(config, source=0):
                 if stage.is_last_stage():
                     stage.success = config['trials']
                 else:
-                    stage = Stage(stage.number + 1, config['trials'])
+                    stage = Stage(stage.number + 1, config['trials'], config['patient_ID'], json_filename)
 
         else:
             frame.resize()
             frame.flip()
             frame.show_thanks_screen()
 
+        save_to_json({stage.number: {'success': stage.success, 'time': time.time()}}, config['patient_ID'], json_filename)
+
         cv2.imshow("cognitive", frame.frame)
         if cv2.waitKey(1) == ord("q") or cv2.getWindowProperty("cognitive", cv2.WND_PROP_VISIBLE) <= 0:
-            exit()
+            break
+
+    save_to_json({'end game': {'time': time.time()}}, config['patient_ID'], json_filename)
+
+    cap.release()
+    cv2.destroyAllWindows()
