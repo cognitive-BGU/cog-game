@@ -22,8 +22,8 @@ class Stage:
         self.image = Image(IMAGES[number], LOCATION)
         self.success = 0
         self.trials = trials
-        self.patient_id = patient_id  # שמירת מזהה המטופל לשימוש פנימי
-        self.filename = filename  # שמירת שם הקובץ
+        self.patient_id = patient_id
+        self.filename = filename
         save_to_json({number: time.time()}, self.patient_id, self.filename)
 
     def add_success(self):
@@ -108,7 +108,7 @@ class Stage:
                     if (
                             distance < RADIUS + self.image.size
                             and 90 <= angle_shoulder3D <= 120
-                            and angle_elbow3D > 150
+                            and angle_elbow3D > 135
                     ):
                         return True
 

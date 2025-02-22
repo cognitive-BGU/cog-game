@@ -1,3 +1,4 @@
 @ECHO OFF
-start /min .\venv\Scripts\python.exe main.py
-PAUSE
+cd /d "%~dp0"
+python main.py
+pause
